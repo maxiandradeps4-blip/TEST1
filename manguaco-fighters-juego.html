@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0f0b1a">
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
-  <title>MANGUACO FIGHTERS — Blondie Nocturna 0.5</title>
+  <title>MANGUACO FIGHTERS — Blondie 0.5</title>
   <style>
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
@@ -51,7 +51,7 @@
   </section>
   <section id="hud" class="hidden" aria-label="Interfaz del videojuego">
     <div class="player-hud"><img id="hud-face" src="data:," alt="Retrato" class="hud-face"><div class="hud-data"><div class="hud-top"><b id="hud-name">BARB</b><span id="score">000000</span></div><div class="bar life"><div id="health-fill"></div></div><div class="power-row"><span>SP</span><div class="bar power"><div id="energy-fill"></div></div></div><div id="hud-special" class="hud-special">TORMENTA ROSA</div></div></div>
-    <div class="stage-hud"><b>STAGE <span id="stage-index">01</span></b><span id="stage-name">SANTIAGO — AL ATARDECER</span></div>
+    <div class="stage-hud"><b>STAGE <span id="stage-index">01</span></b><span id="stage-name">BLONDIE — NOCHE UNDERGROUND</span></div>
     <div class="enemy-hud"><button id="mute" aria-pressed="true">SONIDO ON</button><button id="pause-btn">Ⅱ PAUSA</button><div class="foe-label">ENEMIGOS <strong id="enemy-counter">00</strong></div><span id="wave-text">OLEADA 1 / 4</span></div>
   </section>
   <div id="combo" class="combo hidden" aria-live="polite">3 HITS</div>
@@ -83,6 +83,19 @@ async function initPixelArt(){
    for(let i=0;i<w*h;i++){
      const idx=bytes[pixelPos++];let k=idx*4;rgba[i*4]=palette[k];rgba[i*4+1]=palette[k+1];rgba[i*4+2]=palette[k+2];rgba[i*4+3]=palette[k+3];
    }
+   // Restauración conservadora del alpha: elimina translucidez accidental
+   // en los cuerpos y rellena microhuecos interiores de un solo píxel.
+   const src=rgba.slice();
+   for(let yy=1;yy<h-1;yy++)for(let xx=1;xx<w-1;xx++){
+     const pos=(yy*w+xx)*4, a=src[pos+3];
+     if(a>=28){rgba[pos+3]=255;continue;}
+     const ns=[pos-4,pos+4,pos-w*4,pos+w*4];
+     const filled=ns.filter(n=>src[n+3]>180);
+     if(filled.length>=3){
+       for(let k=0;k<3;k++)rgba[pos+k]=Math.round(filled.reduce((sum,n)=>sum+src[n+k],0)/filled.length);
+       rgba[pos+3]=255;
+     } else rgba[pos+3]=0;
+   }
    frameCache.push(new ImageData(rgba,w,h));
   }
   const single=document.createElement('canvas');single.width=w;single.height=h;
@@ -112,9 +125,9 @@ const HEROES=[
  {id:'maxi',name:'MAXI',color:'#ffdf49',accent:0xffdf49,speed:2,power:5,health:5,reach:127,desc:'Lentes amarillos, barba y fuerza bruta. Su especial es Manguacazo.',special:'MANGUACAZO',weapon:'ondas amarillas'}
 ];
 const FOES=[
- {id:'punk',hp:60,speed:103,damage:7,reach:55,size:.60,points:120},
+ {id:'punk',hp:60,speed:92,damage:7,reach:55,size:.67,points:120},
  {id:'thug',hp:82,speed:75,damage:10,reach:59,size:.73,points:160},
- {id:'heavy',hp:150,speed:48,damage:16,reach:66,size:.94,points:300},
+ {id:'heavy',hp:130,speed:50,damage:16,reach:66,size:.83,points:300},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
 let audioCtx=null;
@@ -213,17 +226,74 @@ function togglePause(){
  if(state==='playing'){state='paused';stage.scene.pause();$('#pause').classList.remove('hidden')}
  else{state='playing';stage.scene.resume();$('#pause').classList.add('hidden')}
 }
-const BLONDIE_BG='data:image/webp;base64,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';
 function stageBackground(s){
- const image=new Image();image.src=BLONDIE_BG;
- const textureKey='blondie-night-2026';
- const paint=()=>{
-  if(!s.sys.isActive())return;
-  if(!s.textures.exists(textureKey))s.textures.addImage(textureKey,image);
-  // Repeated image across the scrolling stage, with the original wet street at the bottom.
-  for(let x=0;x<WORLD;x+=1024){s.add.image(x,0,textureKey).setOrigin(0,0).setDisplaySize(1024,H).setDepth(-250)}
- };
- if(image.complete&&image.naturalWidth)paint();else image.onload=paint;
+ // BLONDIE: reinterpretación arcade de una pista underground de Santiago.
+ const back=s.add.graphics().setDepth(-240);
+ back.fillGradientStyle(0x080712,0x090817,0x231327,0x181020).fillRect(0,0,WORLD,H);
+ // Paredes de concreto oscuro y pilares industriales.
+ for(let x=0;x<WORLD;x+=235){
+  back.fillStyle(x%2?0x211b2a:0x1a1723).fillRect(x,95,230,270);
+  back.lineStyle(2,0x372638,.55).strokeRect(x,95,230,270);
+  for(let y=110;y<355;y+=35){back.lineStyle(1,0x423342,.27).lineBetween(x,y,x+229,y)}
+  back.fillStyle(0x0c0b16).fillRect(x+206,80,22,295);
+  back.fillStyle(0x50304d,.5).fillRect(x+207,80,4,295);
+ }
+ // Tarima elevada al fondo, pista oscura abajo.
+ const floor=s.add.graphics().setDepth(-90);
+ floor.fillStyle(0x10101b).fillRect(0,368,WORLD,H-368);
+ floor.fillStyle(0x43203e).fillRect(0,364,WORLD,9);
+ floor.lineStyle(3,0x673252,.5).lineBetween(0,382,WORLD,382);
+ for(let x=0;x<WORLD;x+=130){floor.lineStyle(1,0x6d456c,.24).lineBetween(x,385,x-115,H)}
+ for(let y=396;y<H;y+=39){floor.lineStyle(1,0x80517f,.20).lineBetween(0,y,WORLD,y)}
+ for(let x=110;x<WORLD;x+=180){floor.fillStyle(0xf12786,.14).fillEllipse(x,476,85,17);floor.fillStyle(0x38d4db,.11).fillEllipse(x+70,540,80,14)}
+ // Estructura de truss y luminarias sobre la pista.
+ const rig=s.add.graphics().setDepth(-159);
+ rig.lineStyle(8,0x141821,1).lineBetween(0,96,WORLD,96);
+ rig.lineStyle(3,0x59606d,.9).lineBetween(0,109,WORLD,109);
+ for(let x=30;x<WORLD;x+=124){rig.lineStyle(3,0x454451,.8).lineBetween(x,95,x+90,109);rig.lineBetween(x+90,95,x,109)}
+ for(let x=90;x<WORLD;x+=280){
+   rig.fillStyle(0x12151c).fillRoundedRect(x-27,106,56,30,5);
+   rig.fillStyle(x%3?0xff438f:0x38dced,.9).fillEllipse(x,139,38,11);
+   rig.fillStyle(x%3?0xff438f:0x38dced,.09).fillTriangle(x-7,144,x-125,370,x+110,370);
+ }
+ // Carteles característicos de un club alternativo, tipografía de arcade.
+ for(let i=0;i<12;i++){
+  const x=i*290+35;
+  let poster=s.add.graphics({x,y:181}).setDepth(-132);
+  poster.fillStyle(0x0b0a13).fillRect(0,0,173,133);
+  poster.lineStyle(3,[0xf0479b,0x43dfcc,0xa175ff][i%3]).strokeRect(5,5,163,123);
+  poster.fillStyle([0x51254a,0x16424a,0x423062][i%3],.9).fillTriangle(28,109,92,25,145,109);
+  let word=i%3===0?'BLONDIE':i%3===1?'DARK WAVE':'MANGUACO';
+  s.add.text(x+87,202,word,{fontFamily:'Impact,Arial Black,sans-serif',fontSize:i%3===0?29:20,fontStyle:'bold',color:i%3===0?'#ff67b8':'#e4dbff',stroke:'#0b0617',strokeThickness:5}).setOrigin(.5,0).setDepth(-128);
+  s.add.text(x+88,263,i%2?'SANTIAGO • UNDERGROUND':'NOCHE DE PELEA',{fontFamily:'monospace',fontSize:10,color:'#bfb6c8'}).setOrigin(.5,0).setDepth(-126);
+ }
+ // Cabina del DJ, altavoces y luces de escenario.
+ for(let x=500;x<WORLD;x+=1120){
+  let g=s.add.graphics({x,y:317}).setDepth(-109);
+  g.fillStyle(0x101018).fillRect(-90,-85,190,118);
+  g.lineStyle(3,0x6c3a6d).strokeRect(-90,-85,190,118);
+  g.fillStyle(0x32253a).fillRect(-64,-26,141,17);
+  g.fillStyle(0x08eddb,.8).fillRect(-42,-22,27,4);
+  g.fillStyle(0xf92a8e,.8).fillRect(15,-22,27,4);
+  for(let dx of [-150,137]){
+   g.fillStyle(0x07080e).fillRect(dx,-145,70,165);
+   for(let yy of [-108,-31]){g.fillStyle(0x303341).fillCircle(dx+35,yy,27);g.fillStyle(0x0b0c14).fillCircle(dx+35,yy,20)}
+  }
+ }
+ // Pilares y láseres de colores alternando por secciones.
+ for(let x=160;x<WORLD;x+=740){
+  let g=s.add.graphics({x,y:160}).setDepth(-108);
+  g.lineStyle(2,0xff3c9e,.55).lineBetween(0,0,260,197);
+  g.lineStyle(2,0x25e8ed,.5).lineBetween(420,0,185,197);
+  g.fillStyle(0xf93c93,.13).fillTriangle(0,0,170,214,320,214);
+ }
+ // Piso de baile con reflejos, barras metálicas y fin de la zona.
+ for(let x=245;x<WORLD;x+=585){
+   let g=s.add.graphics({x,y:364}).setDepth(-103);
+   g.fillStyle(0x15131c).fillRect(0,-135,25,135);
+   g.fillStyle(0x614860).fillRect(4,-128,3,116);
+ }
+ s.add.text(WORLD-410,277,'★ FIN DE LA NOCHE ★',{fontFamily:'monospace',fontSize:22,fontStyle:'bold',color:'#ff84c6',backgroundColor:'#17101d',padding:{x:13,y:8}}).setDepth(-118);
 }
 function stageCreateSprite(s,key,x,y,scale){return s.add.sprite(x,y,key,0).setOrigin(.5,.94).setScale(scale*3.85).setDepth(y+4)}
 function createStage(){
@@ -249,9 +319,6 @@ function toast(text,duration=900){
 }
 function spawnFoe(s,x,y,tier){
  const cfg=FOES[tier];const spr=stageCreateSprite(s,cfg.id,x,y,cfg.size);
- // Gothic cyborg silhouettes: smaller green-haired raider and taller heavy enforcer.
- if(tier===0)spr.setTint(0xa4e7a9);
- if(tier===2)spr.setTint(0xe6d9e9);
  const sh=s.add.ellipse(x,y,69,12,0x06040c,.4).setDepth(y-2);
  const hp=cfg.hp+(wave-1)*14;
  const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage,
@@ -449,7 +516,7 @@ function gameLoop(time,delta){
   let ef=time<e.stun?FRAME.hurt:e.windup?FRAME.jab:Math.floor(e.anim/125)%4+2;
   e.sprite.setFrame(ef).setPosition(e.x,e.y).setFlipX(e.face<0).setDepth(Math.floor(e.y)+1);
   e.shadow.setPosition(e.x,e.y+3).setDepth(Math.floor(e.y)-1);
-  if(time<e.stun)e.sprite.setTint(0xffb6c6);else if(e.windup)e.sprite.setTint(0xffc1a0);else if(e.tier===0)e.sprite.setTint(0xa4e7a9);else if(e.tier===2)e.sprite.setTint(0xe6d9e9);else e.sprite.clearTint();
+  if(time<e.stun)e.sprite.setTint(0xffb6c6);else if(e.windup)e.sprite.setTint(0xffc1a0);else e.sprite.clearTint();
   // individual compact enemy health bars only after first hit
   if(e.hp<e.maxHp){
    if(!e.life){e.life=s.add.graphics().setDepth(1120)}
