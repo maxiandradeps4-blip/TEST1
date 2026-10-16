@@ -227,21 +227,21 @@ function togglePause(){
  else{state='playing';stage.scene.resume();$('#pause').classList.add('hidden')}
 }
 function stageBackground(s){
- // Fondo original aportado por el usuario y publicado en la raíz del repositorio.
- const bgPath='image(20261016-120141).png';
- const key='blondie-original-bg';
- const fallback=s.add.rectangle(0,0,WORLD,H,0x0b0917).setOrigin(0,0).setDepth(-250);
+ // Panorama nocturno extendido subido al repositorio por el usuario.
+ const bgPath='Rainy Neon Blondie Cityscape.png';
+ const key='blondie-rainy-neon-cityscape';
+ s.add.rectangle(0,0,WORLD,H,0x0b0917).setOrigin(0,0).setDepth(-250);
  const img=new Image();
  img.onload=()=>{
    if(!s.sys.isActive()||!img.naturalWidth)return;
    if(!s.textures.exists(key))s.textures.addImage(key,img);
-   // La escena completa conserva su longitud; la ilustración se repite en tramos.
-   for(let x=0;x<WORLD;x+=1024){
-     const width=Math.min(1024,WORLD-x);
-     s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(1024,H).setDepth(-240);
+   // Mantener proporciones del panorama: la ilustración recorre la escena.
+   const tileWidth=img.naturalWidth*H/img.naturalHeight;
+   for(let x=0;x<WORLD;x+=tileWidth){
+     s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(tileWidth,H).setDepth(-240);
    }
  };
- img.onerror=()=>console.error('No se pudo cargar el fondo Blondie:',bgPath);
+ img.onerror=()=>console.error('No se pudo cargar el fondo:',bgPath);
  img.src=encodeURI(bgPath);
 }
 function stageCreateSprite(s,key,x,y,scale){return s.add.sprite(x,y,key,0).setOrigin(.5,.94).setScale(scale*3.85).setDepth(y+4)}
