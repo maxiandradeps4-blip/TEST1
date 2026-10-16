@@ -217,7 +217,7 @@ async function start(){
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
   scene:{preload(){this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of FOES.map(x=>x.id))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
+   create(){stage=this;for(const id of FOES.map(x=>x.id))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V4 · ESCALA CORREGIDA';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -355,7 +355,7 @@ function buildVillainSheets(scene){
  if(scene.textures.exists(key))scene.textures.remove(key);
  scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
 }
-function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');const hero=!foe&&HEROES.some(h=>h.id===key);const sizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};return s.add.sprite(x,y,foe?'goth-villain':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:hero?(sizes[key]||1)*.30:scale*3.85).setDepth(y+4)}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');const hero=!foe&&HEROES.some(h=>h.id===key);const sizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};return s.add.sprite(x,y,foe?'goth-villain':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:hero?(sizes[key]||1)*.40:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
@@ -366,7 +366,7 @@ function createStage(){
   ready:0,attackUntil:0,attackStarted:0,action:'',comboIndex:0,comboCount:0,comboExpire:0,stunnedUntil:0,jumpStarted:0,jumpUntil:0,lastSpecial:false,lastJump:false,nextAuto:0,walkCycle:0,alive:true};
  const p=s.player;
  p.shadow=s.add.ellipse(p.x,p.y,77,15,0x06040c,.45).setDepth(p.y-1);
- p.sprite=stageCreateSprite(s,h.id,p.x,p.y,1.07);
+ p.sprite=stageCreateSprite(s,h.id,p.x,p.y,1.07);p.sprite.setDisplaySize(p.sprite.frame.width*(82/Math.max(1,p.sprite.frame.height)),82);
  s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
  s.cameras.main.startFollow(p.sprite,true,.095,.15,0,50);
  s.cameras.main.setDeadzone(300,160);
@@ -552,7 +552,7 @@ function gameLoop(time,delta){
  const impact=attackProgress>=0&&attackProgress<.65?Math.sin(attackProgress/.65*Math.PI):0;
  const squashX=1+impact*(p.action==='kick'?.1:p.action==='special'?.16:.085);
  const squashY=1-impact*.035;
- const heroSizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};const heroScale=(heroSizes[HEROES[selected].id]||1)*.30;p.sprite.setScale(heroScale*squashX,heroScale*squashY).setAngle(rotation);
+ const heroSizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};const heroHeight=82*(heroSizes[HEROES[selected].id]||1);const heroScale=heroHeight/p.sprite.frame.height;p.sprite.setScale(heroScale*squashX,heroScale*squashY).setAngle(rotation);
  p.shadow.setPosition(p.x,p.y+5).setDepth(Math.floor(p.y)-2).setScale(1-jumping/220,.75-jumping/400);
  if(time<p.invUntil)p.sprite.setAlpha(Math.floor(time/75)%2?.48:1);else p.sprite.setAlpha(1);
  // Enemy behaviour: pursue, telegraph a hit, avoid bunching together, then recover.
