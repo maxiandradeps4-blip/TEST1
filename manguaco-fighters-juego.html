@@ -216,7 +216,7 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('villain-source','Retro%20Beat%20%E2%80%99Em%20Up%20Enemy%20Sprite%20Sheet%20(1).png')},
+  scene:{preload(){this.load.image('villain-source',encodeURI('Retro Beat ’Em Up Enemy Sprite Sheet (1).png')+'?sprites=20261016b')},
    create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
@@ -250,45 +250,35 @@ function stageBackground(s){
 function buildVillainSheets(scene){
  const src=scene.textures.get('villain-source').getSourceImage();
  const sx=src.width/1536,sy=src.height/1024;
- // Frame rectangles taken from the separated 1536x1024 artwork.
- // Every row has its own crop; no neighboring sprite is sampled.
- const rows=[
-  {id:'punk',y:36,h:146},
-  {id:'thug',y:241,h:146},
-  {id:'heavy',y:443,h:151}
- ];
- const cuts=[
-  [12,86],[88,161],[162,237],[242,314],[316,389],[391,464],
-  [466,545],[552,706],[709,819],[823,937],[942,1031],
-  [1033,1151],[1156,1310]
- ];
- const FW=160,FH=180;
+ // Each pose is isolated in a bounded cell; no interpolation from a dark atlas.
+ const rows=[{id:'punk',top:38,bottom:177},{id:'thug',top:245,bottom:383},{id:'heavy',top:445,bottom:594}];
+ const cells=[[13,88],[90,164],[165,241],[244,320],[321,395],[398,475],[478,557],[565,710],[712,821],[824,935],[938,1035],[1038,1163],[1170,1460]];
+ const fw=176,fh=182;
  for(const row of rows){
-  const canvas=document.createElement('canvas');canvas.width=FW*13;canvas.height=FH;
-  const out=canvas.getContext('2d',{willReadFrequently:true});
+  const sheet=document.createElement('canvas');sheet.width=fw*13;sheet.height=fh;
+  const out=sheet.getContext('2d',{willReadFrequently:true});
   for(let f=0;f<13;f++){
-   const [x1,x2]=cuts[f],px=Math.floor(x1*sx),py=Math.floor(row.y*sy);
-   const w=Math.min(Math.ceil((x2-x1)*sx),src.width-px),h=Math.min(Math.ceil(row.h*sy),src.height-py);
-   if(w<=0||h<=0)continue;
-   const crop=document.createElement('canvas');crop.width=w;crop.height=h;
-   const ctx=crop.getContext('2d',{willReadFrequently:true});
+   const [x1,x2]=cells[f];
+   const px=Math.floor(x1*sx),py=Math.floor(row.top*sy);
+   const w=Math.min(Math.ceil((x2-x1)*sx),src.width-px),h=Math.min(Math.ceil((row.bottom-row.top)*sy),src.height-py);
+   if(w<1||h<1)continue;
+   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+   const ctx=tmp.getContext('2d',{willReadFrequently:true});
    ctx.drawImage(src,px,py,w,h,0,0,w,h);
-   const pixels=ctx.getImageData(0,0,w,h),d=pixels.data;
-   // The new atlas has a nearly white backdrop. Remove only near-white
-   // pixels, keeping dark clothing and solid body pixels fully opaque.
+   const im=ctx.getImageData(0,0,w,h),d=im.data;
+   // White source background: remove it using an opaque binary alpha.
+   // No dark-pixel subtraction: black clothing and outlines stay intact.
    for(let i=0;i<d.length;i+=4){
     const R=d[i],G=d[i+1],B=d[i+2];
-    const min=Math.min(R,G,B),max=Math.max(R,G,B);
-    const whiteness=min-(max-min)*0.45;
-    if(whiteness>=242)d[i+3]=0;
-    else if(whiteness>=228)d[i+3]=Math.round((242-whiteness)/14*255);
-    else d[i+3]=255;
+    d[i+3]=(R>232&&G>232&&B>232&&Math.max(R,G,B)-Math.min(R,G,B)<24)?0:255;
    }
-   ctx.putImageData(pixels,0,0);
-   // Keep feet aligned on a consistent baseline.
-   out.drawImage(crop,f*FW+Math.floor((FW-w)/2),FH-h-4);
+   ctx.putImageData(im,0,0);
+   const scale=Math.min(1,152/w,163/h);
+   out.imageSmoothingEnabled=false;
+   out.drawImage(tmp,f*fw+(fw-w*scale)/2,fh-h*scale-5,w*scale,h*scale);
   }
-  scene.textures.addSpriteSheet(row.id+'-new',canvas,{frameWidth:FW,frameHeight:FH});
+  if(scene.textures.exists(row.id+'-new'))scene.textures.remove(row.id+'-new');
+  scene.textures.addSpriteSheet(row.id+'-new',sheet,{frameWidth:fw,frameHeight:fh});
  }
 }
 function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists(key+'-new');return s.add.sprite(x,y,foe?key+'-new':key,0).setOrigin(.5,.94).setScale(foe?scale*1.17:scale*3.85).setDepth(y+4)}
