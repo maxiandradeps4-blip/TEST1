@@ -216,7 +216,7 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v2')},
+  scene:{preload(){this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
    create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
@@ -253,13 +253,13 @@ function buildVillainSheets(scene){
  // One character, seven clearly separated poses in the TOP row only.
  // Animation indices match FRAME: idle(0,1), walk(2..5), attacks(6..9), hurt(10), fall(12).
  const poses=[
-  [45,199,187,438], // idle
-  [239,198,365,438], // walk A
-  [367,198,490,438], // walk B
-  [535,196,749,438], // punch
-  [783,196,998,438], // kick
-  [1032,195,1200,438], // hit
-  [1229,195,1504,438] // fall
+  [45,199,187,428], // idle
+  [239,198,365,428], // walk A
+  [367,198,490,428], // walk B
+  [535,196,749,428], // punch
+  [783,196,998,428], // kick
+  [1032,195,1200,428], // hit
+  [1229,195,1504,428] // fall
  ];
  const sequence=[0,0,1,2,1,2,3,3,4,4,5,5,6];
  const sheet=document.createElement('canvas');sheet.width=FW*sequence.length;sheet.height=FH;
@@ -285,37 +285,23 @@ function buildVillainSheets(scene){
    if(xx>0)stack.push(p-1);if(xx<w-1)stack.push(p+1);
    if(yy>0)stack.push(p-w);if(yy<h-1)stack.push(p+w);
   }
-  // The background between the legs can be a closed white island,
-  // so a border-only flood fill misses it. Remove near-white in the
-  // lower body, including disconnected pockets. Keep face paint intact.
-  for(let yy=Math.floor(h*.46);yy<h;yy++){
+  // Chroma-key ALL disconnected white pockets, not just the outer region.
+  // The artwork has opaque white triangles between the legs and a gray
+  // baseline; both must be removed regardless of flood-fill connectivity.
+  for(let yy=0;yy<h;yy++){
    for(let xx=0;xx<w;xx++){
     const i=(yy*w+xx)*4,R=d[i],G=d[i+1],B=d[i+2];
-    const hi=Math.max(R,G,B),lo=Math.min(R,G,B);
-    if(lo>218&&hi-lo<24)d[i+3]=0;
-    // Remove the source sheet's horizontal gray floor rule.
-    if(yy>h-19&&hi-lo<18&&R>100&&R<225)d[i+3]=0;
+    const lo=Math.min(R,G,B),hi=Math.max(R,G,B);
+    const neutral=(hi-lo)<32;
+    // Face paint is inside the head (upper 45%), so protect that area.
+    if(yy>h*.42 && neutral && lo>177)d[i+3]=0;
+    else if(yy<=h*.42 && neutral && lo>241)d[i+3]=0;
+    // Sheet floor rule is neutral blue-gray near the very bottom.
+    if(yy>h*.91 && Math.abs(R-G)<25 && Math.abs(G-B)<32 && lo>65)d[i+3]=0;
    }
   }
-  // Remove any large, enclosed white islands above the legs as well,
-  // while keeping small pale facial details.
-  const visited=new Uint8Array(w*h);
-  for(let p=0;p<w*h;p++){
-   if(visited[p])continue;
-   const i=p*4,hi=Math.max(d[i],d[i+1],d[i+2]),lo=Math.min(d[i],d[i+1],d[i+2]);
-   if(d[i+3]===0||lo<238||hi-lo>14)continue;
-   const q=[p],component=[];visited[p]=1;
-   for(let qi=0;qi<q.length;qi++){
-    const v=q[qi],vx=v%w,vy=(v/w)|0;component.push(v);
-    const ns=[vx>0?v-1:-1,vx<w-1?v+1:-1,vy>0?v-w:-1,vy<h-1?v+w:-1];
-    for(const n of ns){
-     if(n<0||visited[n])continue;
-     const k=n*4,max=Math.max(d[k],d[k+1],d[k+2]),min=Math.min(d[k],d[k+1],d[k+2]);
-     if(d[k+3]!==0&&min>=238&&max-min<=14){visited[n]=1;q.push(n)}
-    }
-   }
-   if(component.length>80)for(const v of component)d[v*4+3]=0;
-  }
+  // Explicitly remove the sheet's gray horizontal floor line at the feet.
+  // Crop is bottom-aligned to the shoes, not the printed baseline.
   t.putImageData(im,0,0);cleaned.push(crop);
  }
  sequence.forEach((pose,f)=>{
