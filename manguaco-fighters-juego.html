@@ -549,7 +549,7 @@ function buildVillainSheets(scene){
 }
 // Unified sprite sizing. Frame pixels => logical game pixels (camera-independent).
 const HERO_HEIGHT=170;
-const HERO_PROPORTIONS={barb:.91,chris:1,sebilove:1.09,coni:1.02,fe:.91,maxi:1.08};
+const HERO_PROPORTIONS={barb:.91,chris:1,sebilove:1.09,coni:1.02,fe:.91,maxi:1.404};
 function heroScaleFor(sprite,id){return HERO_HEIGHT*(HERO_PROPORTIONS[id]||1)/sprite.frame.height}
 function stageCreateSprite(s,key,x,y,scale){
  const goth=['punk','thug','heavy'].includes(key);
