@@ -216,7 +216,7 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('villain-source',encodeURI('Retro Beat-’Em-Up Enemy Sprite Sheet.png')+'?sprites=two-villains-v1')},
+  scene:{preload(){this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-single-v1')},
    create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
@@ -249,48 +249,54 @@ function stageBackground(s){
 // mediante una máscara de color estimada en los márgenes de cada fotograma.
 function buildVillainSheets(scene){
  const src=scene.textures.get('villain-source').getSourceImage();
- const sx=src.width/1536,sy=src.height/1024,FW=168,FH=185;
- // Two distinct enemy designs, with pose-specific cells on the two-row atlas.
+ const sx=src.width/1536,sy=src.height/1024,FW=190,FH=245;
+ // One character, seven clearly separated poses in the TOP row only.
+ // Animation indices match FRAME: idle(0,1), walk(2..5), attacks(6..9), hurt(10), fall(12).
  const poses=[
-  [[28,75,104,251],[120,75,196,251],[213,75,288,251],[320,75,399,251],[412,75,490,251],[508,75,590,251],
-   [790,74,883,251],[910,74,1000,251],[1085,74,1175,251],[1195,74,1300,251],[280,280,375,460],[790,281,907,460],[1170,281,1380,460]],
-  [[25,608,106,789],[117,608,199,789],[211,608,294,789],[315,608,397,789],[415,608,497,789],[516,608,602,789],
-   [690,607,803,789],[805,607,925,789],[1020,607,1140,789],[1180,607,1315,789],[290,805,397,982],[800,805,920,982],[1180,805,1390,982]]
+  [45,199,187,438], // idle
+  [239,198,365,438], // walk A
+  [367,198,490,438], // walk B
+  [535,196,749,438], // punch
+  [783,196,998,438], // kick
+  [1032,195,1200,438], // hit
+  [1229,195,1504,438] // fall
  ];
- for(let tier=0;tier<2;tier++){
-  const sheet=document.createElement('canvas');sheet.width=FW*13;sheet.height=FH;
-  const ctx=sheet.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=false;
-  for(let f=0;f<13;f++){
-   const [x1,y1,x2,y2]=poses[tier][f],x=Math.floor(x1*sx),y=Math.floor(y1*sy);
-   const w=Math.min(Math.ceil((x2-x1)*sx),src.width-x),h=Math.min(Math.ceil((y2-y1)*sy),src.height-y);
-   if(w<1||h<1)continue;
-   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-   const t=tmp.getContext('2d',{willReadFrequently:true});t.drawImage(src,x,y,w,h,0,0,w,h);
-   const im=t.getImageData(0,0,w,h),d=im.data;
-   // Flood-fill from the crop borders: only remove background connected
-   // to the outside. Dark details enclosed by the silhouette remain opaque.
-   const seen=new Uint8Array(w*h),stack=[];
-   for(let px=0;px<w;px++){stack.push(px,(h-1)*w+px)}
-   for(let py=0;py<h;py++){stack.push(py*w,py*w+w-1)}
-   while(stack.length){
-    const p=stack.pop();if(p<0||p>=w*h||seen[p])continue;
-    seen[p]=1;const i=p*4;
-    if(d[i]<218||d[i+1]<218||d[i+2]<218)continue;
-    d[i+3]=0;
-    const xx=p%w,yy=Math.floor(p/w);
-    if(xx>0)stack.push(p-1);if(xx<w-1)stack.push(p+1);
-    if(yy>0)stack.push(p-w);if(yy<h-1)stack.push(p+w);
-   }
-   t.putImageData(im,0,0);
-   const scale=Math.min(1,FW*0.9/w,FH*0.94/h);
-   ctx.drawImage(tmp,f*FW+(FW-w*scale)/2,FH-h*scale-4,w*scale,h*scale);
+ const sequence=[0,0,1,2,1,2,3,3,4,4,5,5,6];
+ const sheet=document.createElement('canvas');sheet.width=FW*sequence.length;sheet.height=FH;
+ const out=sheet.getContext('2d',{willReadFrequently:true});out.imageSmoothingEnabled=false;
+ const cleaned=[];
+ for(const rect of poses){
+  const x=Math.floor(rect[0]*sx),y=Math.floor(rect[1]*sy);
+  const w=Math.min(src.width-x,Math.ceil((rect[2]-rect[0])*sx));
+  const h=Math.min(src.height-y,Math.ceil((rect[3]-rect[1])*sy));
+  const crop=document.createElement('canvas');crop.width=w;crop.height=h;
+  const t=crop.getContext('2d',{willReadFrequently:true});t.drawImage(src,x,y,w,h,0,0,w,h);
+  const im=t.getImageData(0,0,w,h),d=im.data;
+  // Remove only near-white pixels connected to the outside of the crop.
+  // Protects the white face paint and shoe highlights inside the silhouette.
+  const seen=new Uint8Array(w*h),stack=[];
+  for(let px=0;px<w;px++){stack.push(px,(h-1)*w+px)}
+  for(let py=0;py<h;py++){stack.push(py*w,py*w+w-1)}
+  while(stack.length){
+   const p=stack.pop();if(p<0||p>=w*h||seen[p])continue;
+   seen[p]=1;const i=p*4;
+   if(d[i]<230||d[i+1]<230||d[i+2]<230)continue;
+   d[i+3]=0;const xx=p%w,yy=(p/w)|0;
+   if(xx>0)stack.push(p-1);if(xx<w-1)stack.push(p+1);
+   if(yy>0)stack.push(p-w);if(yy<h-1)stack.push(p+w);
   }
-  const key=(tier===0?'punk':'thug')+'-new';
-  if(scene.textures.exists(key))scene.textures.remove(key);
-  scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
+  t.putImageData(im,0,0);cleaned.push(crop);
  }
+ sequence.forEach((pose,f)=>{
+  const img=cleaned[pose],scale=Math.min(1,FW*.93/img.width,FH*.96/img.height);
+  const w=img.width*scale,h=img.height*scale;
+  out.drawImage(img,f*FW+(FW-w)/2,FH-h-3,w,h);
+ });
+ const key='goth-villain';
+ if(scene.textures.exists(key))scene.textures.remove(key);
+ scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
 }
-function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug'].includes(key)&&s.textures.exists(key+'-new');return s.add.sprite(x,y,foe?key+'-new':key,0).setOrigin(.5,.94).setScale(foe?scale*1.17:scale*3.85).setDepth(y+4)}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');return s.add.sprite(x,y,foe?'goth-villain':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
@@ -326,7 +332,7 @@ function addWave(){
  const total=Math.min(3+wave*2,11);let available=WORLD-220-s.player.x;
  const start=clamp(s.player.x+370,200,WORLD-240);
  for(let i=0;i<total;i++){
-  const tier=i%3===0?1:0;
+  const tier=i%5===0?2:i%3===0?1:0;
   let x=start+i*87;
   if(x>WORLD-90)x=s.player.x-280-i*42;
   x=clamp(x,90,WORLD-90);
