@@ -177,7 +177,7 @@ const FOES=[
  {id:'punk',hp:60,speed:92,damage:7,reach:55,size:.67,points:120},
  {id:'thug',hp:82,speed:75,damage:10,reach:59,size:.73,points:160},
  {id:'heavy',hp:130,speed:50,damage:16,reach:66,size:.83,points:300},
- {id:'street-punk',name:'ENEMIGO PUNK',hp:74,speed:103,damage:9,reach:59,size:.73,points:190},
+ {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
 let audioCtx=null;
@@ -313,8 +313,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('street-punk-source',encodeURI('ENEMIGO PUNK.png')+'?v=punk-20261016a');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V6 · ENEMIGO PUNK';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+  scene:{preload(){this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -393,114 +393,94 @@ function buildHeroSheets(scene){
  * The resulting canvas is transparent and shares the goth enemy's frame size.
  */
 function buildStreetPunkSheets(scene){
- const source=scene.textures.get('street-punk-source').getSourceImage();
- const ratio=Math.min(1,1536/source.width);
- const W=Math.max(1,Math.round(source.width*ratio));
- const H=Math.max(1,Math.round(source.height*ratio));
- const work=document.createElement('canvas');work.width=W;work.height=H;
- const ctx=work.getContext('2d',{willReadFrequently:true});
- ctx.drawImage(source,0,0,W,H);
- const im=ctx.getImageData(0,0,W,H),d=im.data;
- const corner=[(2*W+2)*4,(2*W+W-3)*4,((H-3)*W+2)*4,((H-3)*W+W-3)*4];
- const light=corner.filter(i=>Math.min(d[i],d[i+1],d[i+2])>205&&d[i+3]>180).length>=3;
- const alreadyTransparent=corner.filter(i=>d[i+3]<80).length>=3;
- if(light&&!alreadyTransparent){
-  // Chroma-key white, including disconnected patches between legs.
-  for(let i=0;i<d.length;i+=4){
-   const R=d[i],G=d[i+1],B=d[i+2],lo=Math.min(R,G,B),hi=Math.max(R,G,B);
-   if(lo>244&&hi-lo<22)d[i+3]=0;
-   else if(lo>222&&hi-lo<28)d[i+3]=Math.min(d[i+3],Math.max(0,Math.round((lo-244)/(-22)*255)));
-  }
-  // Remove printed gray ground rules without erasing dark outlines.
-  for(let y=0;y<H;y++){
-   let count=0;
-   for(let x=0;x<W;x++){
-    const i=(y*W+x)*4,lo=Math.min(d[i],d[i+1],d[i+2]),hi=Math.max(d[i],d[i+1],d[i+2]);
-    if(d[i+3]>100&&lo>90&&lo<230&&hi-lo<22)count++;
-   }
-   if(count>W*.32)for(let x=0;x<W;x++){
-    const i=(y*W+x)*4,lo=Math.min(d[i],d[i+1],d[i+2]),hi=Math.max(d[i],d[i+1],d[i+2]);
-    if(lo>90&&hi-lo<22)d[i+3]=0;
-   }
-  }
- }else if(!alreadyTransparent){
-  // For a dark uniform backdrop, erase only background connected to an edge.
-  const bg=[d[corner[0]],d[corner[0]+1],d[corner[0]+2]];
-  const seen=new Uint8Array(W*H),queue=[];
-  for(let x=0;x<W;x++){queue.push(x,(H-1)*W+x)}
-  for(let y=0;y<H;y++){queue.push(y*W,y*W+W-1)}
-  for(let q=0;q<queue.length;q++){
-   const p=queue[q];if(seen[p])continue;seen[p]=1;
-   const i=p*4;
-   if(Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2])>75)continue;
-   d[i+3]=0;const x=p%W,y=(p/W)|0;
-   if(x>0&&!seen[p-1])queue.push(p-1);
-   if(x<W-1&&!seen[p+1])queue.push(p+1);
-   if(y>0&&!seen[p-W])queue.push(p-W);
-   if(y<H-1&&!seen[p+W])queue.push(p+W);
-  }
- }
- ctx.putImageData(im,0,0);
- function filled(x,y){return d[(y*W+x)*4+3]>110}
- const rowCounts=new Int32Array(H);
- for(let y=0;y<H;y++){
-  let n=0;for(let x=1;x<W;x+=2)if(filled(x,y))n++;
-  rowCounts[y]=n;
- }
- function sections(flags,maxGap){
-  const groups=[];let a=-1,last=-1;
-  for(let i=0;i<flags.length;i++)if(flags[i]){
-   if(a<0)a=i;
-   else if(i-last>maxGap+1){groups.push([a,last+1]);a=i}
-   last=i;
-  }
-  if(a>=0)groups.push([a,last+1]);
-  return groups;
- }
- const bands=sections(Array.from(rowCounts,n=>n>Math.max(7,W*.007)),7)
-  .filter(([a,b])=>b-a>Math.max(48,H*.07));
- const regions=[];
- for(const [y1,y2] of bands.slice(0,4)){
-  const counts=new Int32Array(W);
-  for(let x=0;x<W;x++){
-   let n=0;for(let y=y1;y<y2;y+=2)if(filled(x,y))n++;
-   counts[x]=n;
-  }
-  const columns=sections(Array.from(counts,n=>n>2),6);
-  for(const [x1,x2] of columns){
-   if(x2-x1<Math.max(22,W*.025)||x2-x1>W*.37)continue;
-   let top=H,bottom=0,opaque=0;
-   for(let y=y1;y<y2;y++)for(let x=x1;x<x2;x++)if(filled(x,y)){
-    opaque++;if(y<top)top=y;if(y+1>bottom)bottom=y+1;
-   }
-   if(bottom-top<Math.max(42,H*.07)||opaque<300)continue;
-   regions.push({x1:Math.max(0,x1-3),y1:Math.max(0,top-3),x2:Math.min(W,x2+3),y2:Math.min(H,bottom+3)});
-  }
-  if(regions.length>=8)break;
- }
- // A single isolated character is still usable for fallback animations.
- if(!regions.length){
-  regions.push({x1:Math.round(W*.12),y1:Math.round(H*.16),x2:Math.round(W*.88),y2:Math.round(H*.83)});
- }
- const frames=regions.slice(0,12);
- const pick=(n)=>Math.min(n,frames.length-1);
- const indices=frames.length>=8
-  ?[0,0,1,2,3,2,4,4,5,5,6,6,7]
-  :[0,0,pick(1),pick(2),pick(1),pick(2),pick(3),pick(3),pick(4),pick(4),pick(5),pick(5),pick(6)];
- const FW=190,FH=245,sheet=document.createElement('canvas');
- sheet.width=FW*13;sheet.height=FH;
+ // Punk Brawler: eight precisely identified poses. Avoid automatic grid
+ // discovery, which mixed enemies and leftover pixels on the old sheet.
+ const image=scene.textures.get('street-punk-source').getSourceImage();
+ const sx=image.width/1672,sy=image.height/941;
+ const sourceBoxes=[
+  [12,348,193,633],   // idle
+  [214,355,393,633],  // walk A
+  [405,354,568,633],  // walk B
+  [593,361,846,633],  // punch
+  [852,361,1077,633], // kick
+  [1078,369,1282,633],// hurt
+  [1262,296,1448,536],// jump
+  [1390,519,1663,646] // fall
+ ];
+ const frames=[0,0,1,2,1,2,3,3,4,4,5,6,7];
+ const FW=300,FH=300;
+ const sheet=document.createElement('canvas');
+ sheet.width=FW*frames.length;sheet.height=FH;
  const out=sheet.getContext('2d');out.imageSmoothingEnabled=false;
- indices.forEach((n,f)=>{
-  const r=frames[n],bw=r.x2-r.x1,bh=r.y2-r.y1;
-  const scale=Math.min(FW*.88/bw,FH*.86/bh);
-  const dw=bw*scale,dh=bh*scale;
-  out.drawImage(work,r.x1,r.y1,bw,bh,f*FW+(FW-dw)/2,FH-dh-5,dw,dh);
+ const poses=[];
+ for(const [x1,y1,x2,y2] of sourceBoxes){
+  const pad=3;
+  const x=Math.max(0,Math.floor(x1*sx)-pad);
+  const y=Math.max(0,Math.floor(y1*sy)-pad);
+  const w=Math.min(image.width-x,Math.ceil((x2-x1)*sx)+pad*2);
+  const h=Math.min(image.height-y,Math.ceil((y2-y1)*sy)+pad*2);
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(image,x,y,w,h,0,0,w,h);
+  const im=ctx.getImageData(0,0,w,h),d=im.data,N=w*h;
+  // Identify the main connected figure, not pixels from an overlapping pose.
+  const solid=new Uint8Array(N),visited=new Uint8Array(N);
+  for(let p=0;p<N;p++){
+   const i=p*4;
+   solid[p]=(Math.min(d[i],d[i+1],d[i+2])<218&&d[i+3]>50)?1:0;
+  }
+  const queue=new Int32Array(N);
+  let best=null,bestSize=0;
+  for(let p=0;p<N;p++){
+   if(!solid[p]||visited[p])continue;
+   let head=0,tail=1;queue[0]=p;visited[p]=1;
+   while(head<tail){
+    const v=queue[head++],xx=v%w,yy=(v/w)|0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+     if(dx===0&&dy===0)continue;
+     const nx=xx+dx,ny=yy+dy;
+     if(nx<0||nx>=w||ny<0||ny>=h)continue;
+     const n=ny*w+nx;
+     if(solid[n]&&!visited[n]){visited[n]=1;queue[tail++]=n;}
+    }
+   }
+   if(tail>bestSize){bestSize=tail;best=queue.slice(0,tail);}
+  }
+  if(!best||bestSize<120){
+   console.warn('[Manguaco Fighters] Punk sprite sin silueta válida',x1,y1);
+   poses.push(canvas);continue;
+  }
+  const figure=new Uint8Array(N);
+  for(const p of best)figure[p]=1;
+  // Fill isolated light interior details (including the white face paint)
+  // by removing only background connected to the crop's outer edges.
+  const outside=new Uint8Array(N);let head=0,tail=0;
+  const add=(p)=>{if(!figure[p]&&!outside[p]){outside[p]=1;queue[tail++]=p;}};
+  for(let xx=0;xx<w;xx++){add(xx);add((h-1)*w+xx);}
+  for(let yy=0;yy<h;yy++){add(yy*w);add(yy*w+w-1);}
+  while(head<tail){
+   const p=queue[head++],xx=p%w,yy=(p/w)|0;
+   if(xx>0)add(p-1);
+   if(xx<w-1)add(p+1);
+   if(yy>0)add(p-w);
+   if(yy<h-1)add(p+w);
+  }
+  for(let p=0;p<N;p++)d[p*4+3]=outside[p]?0:255;
+  ctx.putImageData(im,0,0);
+  poses.push(canvas);
+ }
+ frames.forEach((idx,f)=>{
+  const source=poses[idx];
+  const fit=Math.min((FW-24)/source.width,(FH-20)/source.height);
+  const dw=source.width*fit,dh=source.height*fit;
+  out.drawImage(source,f*FW+(FW-dw)/2,FH-dh-6,dw,dh);
  });
- if(scene.textures.exists('street-punk-villain'))scene.textures.remove('street-punk-villain');
- scene.textures.addSpriteSheet('street-punk-villain',sheet,{frameWidth:FW,frameHeight:FH});
- console.info('[Manguaco Fighters] ENEMIGO PUNK:',regions.length,'poses detectadas;',W+'x'+H,'px');
+ const key='street-punk-villain';
+ if(scene.textures.exists(key))scene.textures.remove(key);
+ scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
+ console.info('[Manguaco Fighters] Punk Brawler: 8 poses limpias, 13 frames');
 }
-
 function buildVillainSheets(scene){
  const src=scene.textures.get('villain-source').getSourceImage();
  const sx=src.width/1536,sy=src.height/1024,FW=190,FH=245;
