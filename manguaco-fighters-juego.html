@@ -227,73 +227,22 @@ function togglePause(){
  else{state='playing';stage.scene.resume();$('#pause').classList.add('hidden')}
 }
 function stageBackground(s){
- // BLONDIE: reinterpretación arcade de una pista underground de Santiago.
- const back=s.add.graphics().setDepth(-240);
- back.fillGradientStyle(0x080712,0x090817,0x231327,0x181020).fillRect(0,0,WORLD,H);
- // Paredes de concreto oscuro y pilares industriales.
- for(let x=0;x<WORLD;x+=235){
-  back.fillStyle(x%2?0x211b2a:0x1a1723).fillRect(x,95,230,270);
-  back.lineStyle(2,0x372638,.55).strokeRect(x,95,230,270);
-  for(let y=110;y<355;y+=35){back.lineStyle(1,0x423342,.27).lineBetween(x,y,x+229,y)}
-  back.fillStyle(0x0c0b16).fillRect(x+206,80,22,295);
-  back.fillStyle(0x50304d,.5).fillRect(x+207,80,4,295);
- }
- // Tarima elevada al fondo, pista oscura abajo.
- const floor=s.add.graphics().setDepth(-90);
- floor.fillStyle(0x10101b).fillRect(0,368,WORLD,H-368);
- floor.fillStyle(0x43203e).fillRect(0,364,WORLD,9);
- floor.lineStyle(3,0x673252,.5).lineBetween(0,382,WORLD,382);
- for(let x=0;x<WORLD;x+=130){floor.lineStyle(1,0x6d456c,.24).lineBetween(x,385,x-115,H)}
- for(let y=396;y<H;y+=39){floor.lineStyle(1,0x80517f,.20).lineBetween(0,y,WORLD,y)}
- for(let x=110;x<WORLD;x+=180){floor.fillStyle(0xf12786,.14).fillEllipse(x,476,85,17);floor.fillStyle(0x38d4db,.11).fillEllipse(x+70,540,80,14)}
- // Estructura de truss y luminarias sobre la pista.
- const rig=s.add.graphics().setDepth(-159);
- rig.lineStyle(8,0x141821,1).lineBetween(0,96,WORLD,96);
- rig.lineStyle(3,0x59606d,.9).lineBetween(0,109,WORLD,109);
- for(let x=30;x<WORLD;x+=124){rig.lineStyle(3,0x454451,.8).lineBetween(x,95,x+90,109);rig.lineBetween(x+90,95,x,109)}
- for(let x=90;x<WORLD;x+=280){
-   rig.fillStyle(0x12151c).fillRoundedRect(x-27,106,56,30,5);
-   rig.fillStyle(x%3?0xff438f:0x38dced,.9).fillEllipse(x,139,38,11);
-   rig.fillStyle(x%3?0xff438f:0x38dced,.09).fillTriangle(x-7,144,x-125,370,x+110,370);
- }
- // Carteles característicos de un club alternativo, tipografía de arcade.
- for(let i=0;i<12;i++){
-  const x=i*290+35;
-  let poster=s.add.graphics({x,y:181}).setDepth(-132);
-  poster.fillStyle(0x0b0a13).fillRect(0,0,173,133);
-  poster.lineStyle(3,[0xf0479b,0x43dfcc,0xa175ff][i%3]).strokeRect(5,5,163,123);
-  poster.fillStyle([0x51254a,0x16424a,0x423062][i%3],.9).fillTriangle(28,109,92,25,145,109);
-  let word=i%3===0?'BLONDIE':i%3===1?'DARK WAVE':'MANGUACO';
-  s.add.text(x+87,202,word,{fontFamily:'Impact,Arial Black,sans-serif',fontSize:i%3===0?29:20,fontStyle:'bold',color:i%3===0?'#ff67b8':'#e4dbff',stroke:'#0b0617',strokeThickness:5}).setOrigin(.5,0).setDepth(-128);
-  s.add.text(x+88,263,i%2?'SANTIAGO • UNDERGROUND':'NOCHE DE PELEA',{fontFamily:'monospace',fontSize:10,color:'#bfb6c8'}).setOrigin(.5,0).setDepth(-126);
- }
- // Cabina del DJ, altavoces y luces de escenario.
- for(let x=500;x<WORLD;x+=1120){
-  let g=s.add.graphics({x,y:317}).setDepth(-109);
-  g.fillStyle(0x101018).fillRect(-90,-85,190,118);
-  g.lineStyle(3,0x6c3a6d).strokeRect(-90,-85,190,118);
-  g.fillStyle(0x32253a).fillRect(-64,-26,141,17);
-  g.fillStyle(0x08eddb,.8).fillRect(-42,-22,27,4);
-  g.fillStyle(0xf92a8e,.8).fillRect(15,-22,27,4);
-  for(let dx of [-150,137]){
-   g.fillStyle(0x07080e).fillRect(dx,-145,70,165);
-   for(let yy of [-108,-31]){g.fillStyle(0x303341).fillCircle(dx+35,yy,27);g.fillStyle(0x0b0c14).fillCircle(dx+35,yy,20)}
-  }
- }
- // Pilares y láseres de colores alternando por secciones.
- for(let x=160;x<WORLD;x+=740){
-  let g=s.add.graphics({x,y:160}).setDepth(-108);
-  g.lineStyle(2,0xff3c9e,.55).lineBetween(0,0,260,197);
-  g.lineStyle(2,0x25e8ed,.5).lineBetween(420,0,185,197);
-  g.fillStyle(0xf93c93,.13).fillTriangle(0,0,170,214,320,214);
- }
- // Piso de baile con reflejos, barras metálicas y fin de la zona.
- for(let x=245;x<WORLD;x+=585){
-   let g=s.add.graphics({x,y:364}).setDepth(-103);
-   g.fillStyle(0x15131c).fillRect(0,-135,25,135);
-   g.fillStyle(0x614860).fillRect(4,-128,3,116);
- }
- s.add.text(WORLD-410,277,'★ FIN DE LA NOCHE ★',{fontFamily:'monospace',fontSize:22,fontStyle:'bold',color:'#ff84c6',backgroundColor:'#17101d',padding:{x:13,y:8}}).setDepth(-118);
+ // Fondo original aportado por el usuario y publicado en la raíz del repositorio.
+ const bgPath='image(20261016-120141).png';
+ const key='blondie-original-bg';
+ const fallback=s.add.rectangle(0,0,WORLD,H,0x0b0917).setOrigin(0,0).setDepth(-250);
+ const img=new Image();
+ img.onload=()=>{
+   if(!s.sys.isActive()||!img.naturalWidth)return;
+   if(!s.textures.exists(key))s.textures.addImage(key,img);
+   // La escena completa conserva su longitud; la ilustración se repite en tramos.
+   for(let x=0;x<WORLD;x+=1024){
+     const width=Math.min(1024,WORLD-x);
+     s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(1024,H).setDepth(-240);
+   }
+ };
+ img.onerror=()=>console.error('No se pudo cargar el fondo Blondie:',bgPath);
+ img.src=encodeURI(bgPath);
 }
 function stageCreateSprite(s,key,x,y,scale){return s.add.sprite(x,y,key,0).setOrigin(.5,.94).setScale(scale*3.85).setDepth(y+4)}
 function createStage(){
