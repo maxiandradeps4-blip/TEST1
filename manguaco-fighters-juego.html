@@ -552,7 +552,7 @@ function gameLoop(time,delta){
  const impact=attackProgress>=0&&attackProgress<.65?Math.sin(attackProgress/.65*Math.PI):0;
  const squashX=1+impact*(p.action==='kick'?.1:p.action==='special'?.16:.085);
  const squashY=1-impact*.035;
- p.sprite.setScale(1.07*3.85*squashX,1.07*3.85*squashY).setAngle(rotation);
+ const heroSizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};const heroScale=(heroSizes[HEROES[selected].id]||1)*.30;p.sprite.setScale(heroScale*squashX,heroScale*squashY).setAngle(rotation);
  p.shadow.setPosition(p.x,p.y+5).setDepth(Math.floor(p.y)-2).setScale(1-jumping/220,.75-jumping/400);
  if(time<p.invUntil)p.sprite.setAlpha(Math.floor(time/75)%2?.48:1);else p.sprite.setAlpha(1);
  // Enemy behaviour: pursue, telegraph a hit, avoid bunching together, then recover.
