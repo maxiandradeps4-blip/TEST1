@@ -216,8 +216,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
+  scene:{preload(){this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016a');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('hero-source'))buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -247,6 +247,48 @@ function stageBackground(s){
 
 // Recorta los enemigos del atlas subido a GitHub y elimina el fondo degradado
 // mediante una máscara de color estimada en los márgenes de cada fotograma.
+
+// Cut the six protagonists from the uploaded 8-pose character atlas.
+// Crop positions are normalized to the 1408px reference artwork; use
+// the source's natural dimensions to support high-resolution exports.
+function buildHeroSheets(scene){
+ const src=scene.textures.get('hero-source').getSourceImage();
+ const W=src.width,H=src.height,FW=200,FH=205;
+ const rows=[0,180,367,558,742,903,1058];
+ const xs=[[57,214],[217,365],[367,517],[520,671],[676,873],[874,1080],[1081,1250],[1250,1408]];
+ const ids=['barb','chris','sebilove','coni','fe','maxi'];
+ const seq=[0,0,1,2,1,2,4,4,5,5,6,7,6];
+ const sx=W/1408,sy=H/1058;
+ ids.forEach((id,row)=>{
+  const sheet=document.createElement('canvas');sheet.width=FW*13;sheet.height=FH;
+  const out=sheet.getContext('2d',{willReadFrequently:true});out.imageSmoothingEnabled=false;
+  const poses=[];
+  for(let j=0;j<8;j++){
+   const x=Math.max(0,Math.floor(xs[j][0]*sx)),y=Math.max(0,Math.floor((rows[row]+2)*sy));
+   const w=Math.min(W-x,Math.ceil((xs[j][1]-xs[j][0])*sx));
+   const h=Math.min(H-y,Math.ceil((rows[row+1]-rows[row]-4)*sy));
+   const crop=document.createElement('canvas');crop.width=w;crop.height=h;
+   const t=crop.getContext('2d',{willReadFrequently:true});t.drawImage(src,x,y,w,h,0,0,w,h);
+   const im=t.getImageData(0,0,w,h),d=im.data;
+   // White key with soft edge anti-aliasing. Keep dark outlines.
+   for(let p=0;p<d.length;p+=4){
+    const lo=Math.min(d[p],d[p+1],d[p+2]);
+    const hi=Math.max(d[p],d[p+1],d[p+2]);
+    if(lo>245&&hi-lo<13)d[p+3]=0;
+    else if(lo>225&&hi-lo<19)d[p+3]=Math.min(d[p+3],Math.round((245-lo)/20*255));
+   }
+   t.putImageData(im,0,0);poses.push(crop);
+  }
+  seq.forEach((j,f)=>{
+   const img=poses[j],scale=Math.min(1,FW*.92/img.width,FH*.96/img.height);
+   const w=img.width*scale,h=img.height*scale;
+   out.drawImage(img,f*FW+(FW-w)/2,FH-h-3,w,h);
+  });
+  const key=id+'-hero';
+  if(scene.textures.exists(key))scene.textures.remove(key);
+  scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
+ });
+}
 function buildVillainSheets(scene){
  const src=scene.textures.get('villain-source').getSourceImage();
  const sx=src.width/1536,sy=src.height/1024,FW=190,FH=245;
@@ -313,7 +355,7 @@ function buildVillainSheets(scene){
  if(scene.textures.exists(key))scene.textures.remove(key);
  scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
 }
-function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');return s.add.sprite(x,y,foe?'goth-villain':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:scale*3.85).setDepth(y+4)}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');const hero=!foe&&s.textures.exists(key+'-hero');const sizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};return s.add.sprite(x,y,foe?'goth-villain':hero?key+'-hero':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:hero?(sizes[key]||1)*.96:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
