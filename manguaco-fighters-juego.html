@@ -216,7 +216,7 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('villain-source','Retro%20Thug%20Sprite%20Sheet.png')},
+  scene:{preload(){this.load.image('villain-source','Retro%20Beat%20%E2%80%99Em%20Up%20Enemy%20Sprite%20Sheet%20(1).png')},
    create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
@@ -249,40 +249,49 @@ function stageBackground(s){
 // mediante una máscara de color estimada en los márgenes de cada fotograma.
 function buildVillainSheets(scene){
  const src=scene.textures.get('villain-source').getSourceImage();
- const rows=[{id:'punk',top:0,bottom:202},{id:'thug',top:202,bottom:406},{id:'heavy',top:406,bottom:613}];
- const xs=[18,105,202,286,373,460,575,745,886,1032,1125,1232,1335];
- const sw=[85,88,91,91,91,98,140,140,130,100,110,125,135];
+ const sx=src.width/1536,sy=src.height/1024;
+ // Frame rectangles taken from the separated 1536x1024 artwork.
+ // Every row has its own crop; no neighboring sprite is sampled.
+ const rows=[
+  {id:'punk',y:36,h:146},
+  {id:'thug',y:241,h:146},
+  {id:'heavy',y:443,h:151}
+ ];
+ const cuts=[
+  [12,86],[88,161],[162,237],[242,314],[316,389],[391,464],
+  [466,545],[552,706],[709,819],[823,937],[942,1031],
+  [1033,1151],[1156,1310]
+ ];
+ const FW=160,FH=180;
  for(const row of rows){
-  const fw=144,fh=208;
-  const sheet=document.createElement('canvas');sheet.width=fw*13;sheet.height=fh;
-  const out=sheet.getContext('2d',{willReadFrequently:true});
+  const canvas=document.createElement('canvas');canvas.width=FW*13;canvas.height=FH;
+  const out=canvas.getContext('2d',{willReadFrequently:true});
   for(let f=0;f<13;f++){
-   const x=xs[f],w=Math.min(sw[f],src.width-x),y=row.top,h=Math.min(row.bottom-y,src.height-y);
-   const temp=document.createElement('canvas');temp.width=w;temp.height=h;
-   const ctx=temp.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,x,y,w,h,0,0,w,h);
-   const pix=ctx.getImageData(0,0,w,h),data=pix.data;
-   // Sample background from the side margins at each height, interpolate across.
-   for(let py=0;py<h;py++){
-    const ly=(py*w)*4,rx=(py*w+w-1)*4;
-    const left=[data[ly],data[ly+1],data[ly+2]];
-    const right=[data[rx],data[rx+1],data[rx+2]];
-    for(let px=0;px<w;px++){
-     const i=(py*w+px)*4,t=px/Math.max(1,w-1);
-     const dr=data[i]-(left[0]*(1-t)+right[0]*t);
-     const dg=data[i+1]-(left[1]*(1-t)+right[1]*t);
-     const db=data[i+2]-(left[2]*(1-t)+right[2]*t);
-     const dist=Math.sqrt(dr*dr+dg*dg+db*db);
-     // Hard-edged pixel-art transparency, avoiding semi-transparent body parts.
-     data[i+3]=dist>40?255:0;
-    }
+   const [x1,x2]=cuts[f],px=Math.floor(x1*sx),py=Math.floor(row.y*sy);
+   const w=Math.min(Math.ceil((x2-x1)*sx),src.width-px),h=Math.min(Math.ceil(row.h*sy),src.height-py);
+   if(w<=0||h<=0)continue;
+   const crop=document.createElement('canvas');crop.width=w;crop.height=h;
+   const ctx=crop.getContext('2d',{willReadFrequently:true});
+   ctx.drawImage(src,px,py,w,h,0,0,w,h);
+   const pixels=ctx.getImageData(0,0,w,h),d=pixels.data;
+   // The new atlas has a nearly white backdrop. Remove only near-white
+   // pixels, keeping dark clothing and solid body pixels fully opaque.
+   for(let i=0;i<d.length;i+=4){
+    const R=d[i],G=d[i+1],B=d[i+2];
+    const min=Math.min(R,G,B),max=Math.max(R,G,B);
+    const whiteness=min-(max-min)*0.45;
+    if(whiteness>=242)d[i+3]=0;
+    else if(whiteness>=228)d[i+3]=Math.round((242-whiteness)/14*255);
+    else d[i+3]=255;
    }
-   ctx.putImageData(pix,0,0);
-   out.drawImage(temp,f*fw+(fw-w)/2,fh-h);
+   ctx.putImageData(pixels,0,0);
+   // Keep feet aligned on a consistent baseline.
+   out.drawImage(crop,f*FW+Math.floor((FW-w)/2),FH-h-4);
   }
-  scene.textures.addSpriteSheet(row.id+'-new',sheet,{frameWidth:fw,frameHeight:fh});
+  scene.textures.addSpriteSheet(row.id+'-new',canvas,{frameWidth:FW,frameHeight:FH});
  }
 }
-function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists(key+'-new');return s.add.sprite(x,y,foe?key+'-new':key,0).setOrigin(.5,.94).setScale(foe?scale*1.22:scale*3.85).setDepth(y+4)}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists(key+'-new');return s.add.sprite(x,y,foe?key+'-new':key,0).setOrigin(.5,.94).setScale(foe?scale*1.17:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
