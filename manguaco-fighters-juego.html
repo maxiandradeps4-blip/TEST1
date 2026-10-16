@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0f0b1a">
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
-  <title>MANGUACO FIGHTERS — Arcade 0.4</title>
+  <title>MANGUACO FIGHTERS — Blondie Nocturna 0.5</title>
   <style>
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
@@ -112,9 +112,9 @@ const HEROES=[
  {id:'maxi',name:'MAXI',color:'#ffdf49',accent:0xffdf49,speed:2,power:5,health:5,reach:127,desc:'Lentes amarillos, barba y fuerza bruta. Su especial es Manguacazo.',special:'MANGUACAZO',weapon:'ondas amarillas'}
 ];
 const FOES=[
- {id:'punk',hp:60,speed:92,damage:7,reach:55,size:.67,points:120},
+ {id:'punk',hp:60,speed:103,damage:7,reach:55,size:.60,points:120},
  {id:'thug',hp:82,speed:75,damage:10,reach:59,size:.73,points:160},
- {id:'heavy',hp:130,speed:50,damage:16,reach:66,size:.83,points:300},
+ {id:'heavy',hp:150,speed:48,damage:16,reach:66,size:.94,points:300},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
 let audioCtx=null;
@@ -257,6 +257,18 @@ function stageBackground(s){
   let sign=s.add.text(x+14,220,label,{fontFamily:'Impact, Arial Black, sans-serif',fontStyle:'bold',fontSize:i%2?19:15,color:i%2?'#ffbc68':'#9ef5dd',stroke:'#10101e',strokeThickness:4}).setDepth(-128);
   const decal=s.add.text(x+95,303,i%2?'★ ★ ★':'MFG',{fontFamily:'monospace',fontSize:25,color:i%2?'#ed77ae':'#71d2ca'}).setRotation(-.05).setAlpha(.72).setDepth(-123);
  }
+ // Blondie-inspired Santiago night: neon venue, posters, wet asphalt and hilltop lights.
+ const club=s.add.graphics().setDepth(-121);
+ club.fillStyle(0x171424).fillRect(48,206,305,161);
+ club.fillStyle(0x4a294f).fillRect(65,249,263,115);
+ club.fillStyle(0x100e1d).fillRect(124,286,119,80);
+ club.lineStyle(5,0xff4aa9).strokeRect(118,279,131,87);
+ club.fillStyle(0xff4aa9,.13).fillRect(48,355,310,15);
+ s.add.text(83,214,'BLONDIE',{fontFamily:'Impact,Arial Black,sans-serif',fontStyle:'bold',fontSize:39,color:'#ff60ba',stroke:'#240d36',strokeThickness:7}).setDepth(-119);
+ s.add.text(70,304,'POST PUNK\nNEW WAVE',{fontFamily:'monospace',fontSize:11,color:'#f6b5db',stroke:'#24112f',strokeThickness:2}).setDepth(-118);
+ const rain=s.add.graphics().setDepth(-90);
+ for(let i=0;i<105;i++){const x=(i*127+31)%WORLD,y=388+(i*41)%204;rain.fillStyle(i%3?0x945b9c:0xff74ae,.10);rain.fillRect(x,y,3+(i%4)*3,2)}
+ for(let x=130;x<WORLD;x+=365){rain.fillStyle(0xe653a6,.08).fillEllipse(x,475,85,10);rain.fillStyle(0x6a9bcf,.08).fillEllipse(x+105,534,112,8)}
  // Event posters on first half, the player's actual neighbourhood.
  s.add.text(95,277,'GRUPO DE AMIGOS\nDEL POTO',{fontFamily:'Impact, Arial Black, sans-serif',fontSize:24,fontStyle:'bold',lineSpacing:-3,color:'#ff78bc',stroke:'#2a2039',strokeThickness:5}).setDepth(-118).setRotation(-.025);
  s.add.text(900,292,'MANGUACO\nFIGHTERS',{fontFamily:'Impact, Arial Black, sans-serif',fontStyle:'bold',fontSize:26,lineSpacing:-4,color:'#91f8bb',stroke:'#22313d',strokeThickness:5}).setDepth(-118);
@@ -301,6 +313,9 @@ function toast(text,duration=900){
 }
 function spawnFoe(s,x,y,tier){
  const cfg=FOES[tier];const spr=stageCreateSprite(s,cfg.id,x,y,cfg.size);
+ // Gothic cyborg silhouettes: smaller green-haired raider and taller heavy enforcer.
+ if(tier===0)spr.setTint(0xa4e7a9);
+ if(tier===2)spr.setTint(0xe6d9e9);
  const sh=s.add.ellipse(x,y,69,12,0x06040c,.4).setDepth(y-2);
  const hp=cfg.hp+(wave-1)*14;
  const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage,
@@ -498,7 +513,7 @@ function gameLoop(time,delta){
   let ef=time<e.stun?FRAME.hurt:e.windup?FRAME.jab:Math.floor(e.anim/125)%4+2;
   e.sprite.setFrame(ef).setPosition(e.x,e.y).setFlipX(e.face<0).setDepth(Math.floor(e.y)+1);
   e.shadow.setPosition(e.x,e.y+3).setDepth(Math.floor(e.y)-1);
-  if(time<e.stun)e.sprite.setTint(0xffb6c6);else if(e.windup)e.sprite.setTint(0xffc1a0);else e.sprite.clearTint();
+  if(time<e.stun)e.sprite.setTint(0xffb6c6);else if(e.windup)e.sprite.setTint(0xffc1a0);else if(e.tier===0)e.sprite.setTint(0xa4e7a9);else if(e.tier===2)e.sprite.setTint(0xe6d9e9);else e.sprite.clearTint();
   // individual compact enemy health bars only after first hit
   if(e.hp<e.maxHp){
    if(!e.life){e.life=s.add.graphics().setDepth(1120)}
