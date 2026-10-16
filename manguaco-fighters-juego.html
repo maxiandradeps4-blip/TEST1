@@ -216,8 +216,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){},
-   create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
+  scene:{preload(){this.load.image('villain-source','Retro%20Thug%20Sprite%20Sheet.png')},
+   create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -244,7 +244,45 @@ function stageBackground(s){
  img.onerror=()=>console.error('No se pudo cargar el fondo:',bgPath);
  img.src=encodeURI(bgPath);
 }
-function stageCreateSprite(s,key,x,y,scale){return s.add.sprite(x,y,key,0).setOrigin(.5,.94).setScale(scale*3.85).setDepth(y+4)}
+
+// Recorta los enemigos del atlas subido a GitHub y elimina el fondo degradado
+// mediante una máscara de color estimada en los márgenes de cada fotograma.
+function buildVillainSheets(scene){
+ const src=scene.textures.get('villain-source').getSourceImage();
+ const rows=[{id:'punk',top:0,bottom:202},{id:'thug',top:202,bottom:406},{id:'heavy',top:406,bottom:613}];
+ const xs=[18,105,202,286,373,460,575,745,886,1032,1125,1232,1335];
+ const sw=[85,88,91,91,91,98,140,140,130,100,110,125,135];
+ for(const row of rows){
+  const fw=144,fh=208;
+  const sheet=document.createElement('canvas');sheet.width=fw*13;sheet.height=fh;
+  const out=sheet.getContext('2d',{willReadFrequently:true});
+  for(let f=0;f<13;f++){
+   const x=xs[f],w=Math.min(sw[f],src.width-x),y=row.top,h=Math.min(row.bottom-y,src.height-y);
+   const temp=document.createElement('canvas');temp.width=w;temp.height=h;
+   const ctx=temp.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,x,y,w,h,0,0,w,h);
+   const pix=ctx.getImageData(0,0,w,h),data=pix.data;
+   // Sample background from the side margins at each height, interpolate across.
+   for(let py=0;py<h;py++){
+    const ly=(py*w)*4,rx=(py*w+w-1)*4;
+    const left=[data[ly],data[ly+1],data[ly+2]];
+    const right=[data[rx],data[rx+1],data[rx+2]];
+    for(let px=0;px<w;px++){
+     const i=(py*w+px)*4,t=px/Math.max(1,w-1);
+     const dr=data[i]-(left[0]*(1-t)+right[0]*t);
+     const dg=data[i+1]-(left[1]*(1-t)+right[1]*t);
+     const db=data[i+2]-(left[2]*(1-t)+right[2]*t);
+     const dist=Math.sqrt(dr*dr+dg*dg+db*db);
+     // Hard-edged pixel-art transparency, avoiding semi-transparent body parts.
+     data[i+3]=dist>40?255:0;
+    }
+   }
+   ctx.putImageData(pix,0,0);
+   out.drawImage(temp,f*fw+(fw-w)/2,fh-h);
+  }
+  scene.textures.addSpriteSheet(row.id+'-new',sheet,{frameWidth:fw,frameHeight:fh});
+ }
+}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists(key+'-new');return s.add.sprite(x,y,foe?key+'-new':key,0).setOrigin(.5,.94).setScale(foe?scale*1.22:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
