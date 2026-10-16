@@ -213,81 +213,17 @@ function togglePause(){
  if(state==='playing'){state='paused';stage.scene.pause();$('#pause').classList.remove('hidden')}
  else{state='playing';stage.scene.resume();$('#pause').classList.add('hidden')}
 }
+const BLONDIE_BG='data:image/webp;base64,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';
 function stageBackground(s){
- // Three depth layers: skyline, neighbourhood and street, all painted with Phaser primitives.
- let sky=s.add.graphics().setScrollFactor(0).setDepth(-240);
- sky.fillGradientStyle(0x201d47,0x201d47,0xee637c,0xee637c).fillRect(0,0,W,H);
- sky.fillStyle(0xffab80,.2).fillCircle(740,209,138);
- sky.fillStyle(0xffa369,.47).fillEllipse(744,250,405,85);
- // Santiago hills and Andean mountains
- let hills=s.add.graphics().setScrollFactor(.12).setDepth(-215);
- hills.fillStyle(0x593956,.9);
- hills.fillPoints([{x:-180,y:293},{x:90,y:243},{x:320,y:281},{x:525,y:207},{x:770,y:270},{x:1090,y:204},{x:1460,y:283}],true);
- hills.fillStyle(0x43324f,.9);
- hills.fillPoints([{x:-200,y:345},{x:80,y:273},{x:390,y:302},{x:622,y:263},{x:820,y:299},{x:1090,y:235},{x:1490,y:320}],true);
- // Layered tower blocks, every window is drawn not pasted.
- const distant=s.add.graphics().setScrollFactor(.28).setDepth(-194);
- const seeds=[47,28,78,55,42,92,74,63,40,89,59,68,76,51,81,55,90,45,79,72,60,110,76,52,80,91,56,73,95,64];
- for(let i=0;i<66;i++){
-  const x=i*48-35,ht=80+seeds[i%seeds.length]*1.2;
-  distant.fillStyle(i%3===0?0x443854:0x4b3857,.95).fillRect(x,344-ht,47,ht);
-  for(let yy=344-ht+10;yy<338;yy+=16)for(let xx=x+8;xx<x+39;xx+=13){distant.fillStyle((i+yy+xx)%4===0?0xeaa17d:0x77667e,.68).fillRect(xx,yy,5,7)}
- }
- // foreground street recedes in perspective
- const curb=s.add.graphics().setDepth(-85);
- curb.fillStyle(0x625064).fillRect(0,363,WORLD,25);
- curb.fillStyle(0x252437).fillRect(0,380,WORLD,220);
- curb.fillStyle(0x342c40).fillRect(0,394,WORLD,4);
- for(let y=407;y<H;y+=38){curb.lineStyle(1,0x615168,.36);curb.lineBetween(0,y,WORLD,y)}
- for(let x=0;x<WORLD;x+=142){curb.lineStyle(2,0x473f51,.6);curb.lineBetween(x+24,384,x-125,600)}
- curb.lineStyle(3,0xda9b75,.55);
- for(let x=70;x<WORLD;x+=260)curb.lineBetween(x,501,x+111,501);
- for(let x=75;x<WORLD;x+=317){curb.fillStyle(0xd87e89,.07).fillEllipse(x,475,90,18);curb.fillStyle(0x70cbd2,.065).fillEllipse(x+55,544,70,11)}
- // Urban blocks, neon businesses and murals on the pavement edge.
- for(let i=0;i<16;i++){
-  let x=45+i*216,w=193;
-  let block=s.add.graphics({x,y:215}).setDepth(-135);
-  block.fillStyle([0x38304a,0x40304b,0x28394a,0x4b3144][i%4]).fillRect(0,0,w,152);
-  block.fillStyle(0x171626).fillRect(15,47,62,105);
-  block.fillStyle(0x272333).fillRect(89,40,91,114);
-  block.lineStyle(5,[0x5ce8cd,0xf27aa2,0xf4b95f][i%3],.7).strokeRect(98,59,62,64);
-  block.fillStyle(0x777187).fillRect(0,143,w,9);
-  for(let j=0;j<5;j++){block.fillStyle(0x70627c,.44).fillRect(8+j*37,6,3,21)}
-  const label=['TATUAJES','DUENDECILLOS','CAFÉ 24H','MANGUACO','ARCADE','GAP'][i%6];
-  let sign=s.add.text(x+14,220,label,{fontFamily:'Impact, Arial Black, sans-serif',fontStyle:'bold',fontSize:i%2?19:15,color:i%2?'#ffbc68':'#9ef5dd',stroke:'#10101e',strokeThickness:4}).setDepth(-128);
-  const decal=s.add.text(x+95,303,i%2?'★ ★ ★':'MFG',{fontFamily:'monospace',fontSize:25,color:i%2?'#ed77ae':'#71d2ca'}).setRotation(-.05).setAlpha(.72).setDepth(-123);
- }
- // Blondie-inspired Santiago night: neon venue, posters, wet asphalt and hilltop lights.
- const club=s.add.graphics().setDepth(-121);
- club.fillStyle(0x171424).fillRect(48,206,305,161);
- club.fillStyle(0x4a294f).fillRect(65,249,263,115);
- club.fillStyle(0x100e1d).fillRect(124,286,119,80);
- club.lineStyle(5,0xff4aa9).strokeRect(118,279,131,87);
- club.fillStyle(0xff4aa9,.13).fillRect(48,355,310,15);
- s.add.text(83,214,'BLONDIE',{fontFamily:'Impact,Arial Black,sans-serif',fontStyle:'bold',fontSize:39,color:'#ff60ba',stroke:'#240d36',strokeThickness:7}).setDepth(-119);
- s.add.text(70,304,'POST PUNK\nNEW WAVE',{fontFamily:'monospace',fontSize:11,color:'#f6b5db',stroke:'#24112f',strokeThickness:2}).setDepth(-118);
- const rain=s.add.graphics().setDepth(-90);
- for(let i=0;i<105;i++){const x=(i*127+31)%WORLD,y=388+(i*41)%204;rain.fillStyle(i%3?0x945b9c:0xff74ae,.10);rain.fillRect(x,y,3+(i%4)*3,2)}
- for(let x=130;x<WORLD;x+=365){rain.fillStyle(0xe653a6,.08).fillEllipse(x,475,85,10);rain.fillStyle(0x6a9bcf,.08).fillEllipse(x+105,534,112,8)}
- // Event posters on first half, the player's actual neighbourhood.
- s.add.text(95,277,'GRUPO DE AMIGOS\nDEL POTO',{fontFamily:'Impact, Arial Black, sans-serif',fontSize:24,fontStyle:'bold',lineSpacing:-3,color:'#ff78bc',stroke:'#2a2039',strokeThickness:5}).setDepth(-118).setRotation(-.025);
- s.add.text(900,292,'MANGUACO\nFIGHTERS',{fontFamily:'Impact, Arial Black, sans-serif',fontStyle:'bold',fontSize:26,lineSpacing:-4,color:'#91f8bb',stroke:'#22313d',strokeThickness:5}).setDepth(-118);
- // Street furniture along the wall; depth sorting is by foot-height.
- for(let i=0;i<19;i++){
-  const x=150+i*170;
-  let g=s.add.graphics({x,y:354}).setDepth(-96);
-  if(i%3===0){g.fillStyle(0x17202d).fillRect(0,-73,8,90);g.fillStyle(0xeb8eb2).fillRect(-9,-80,27,7);g.fillStyle(0xf4cf8b,.75).fillEllipse(4,-80,41,12)}
-  else if(i%3===1){g.fillStyle(0x986d51).fillRect(-5,-33,51,32);g.lineStyle(3,0x3d2931).strokeRect(-5,-33,51,32);g.lineBetween(-2,-31,40,-1);g.lineBetween(42,-31,0,0)}
-  else{g.fillStyle(0x293a43).fillRoundedRect(0,-30,28,30,5);g.fillStyle(0x60727b).fillRoundedRect(4,-26,20,5,2)}
- }
- // Tree silhouettes in front of the distant skyline
- for(const px of [660,1630,2540]){
-  let t=s.add.graphics({x:px,y:364}).setDepth(-103);
-  t.lineStyle(11,0x1c2531);t.lineBetween(0,0,0,-140);t.lineStyle(5,0x1c2531);t.lineBetween(0,-101,-54,-148);t.lineBetween(0,-122,47,-176);
-  for(const [dx,dy,r] of [[-43,-149,33],[31,-173,42],[-13,-177,45],[50,-132,29]]){t.fillStyle(0x25404a,.96).fillCircle(dx,dy,r);t.fillStyle(0x315657,.22).fillCircle(dx+5,dy-6,r*.64)}
- }
- // Goal indicator, re-used stage prop.
- s.add.text(WORLD-360,260,'★ FIN DEL NIVEL ★',{fontFamily:'monospace',fontSize:22,fontStyle:'bold',color:'#ffe080',backgroundColor:'#302740',padding:{x:16,y:8}}).setDepth(-119);
+ const image=new Image();image.src=BLONDIE_BG;
+ const textureKey='blondie-night-2026';
+ const paint=()=>{
+  if(!s.sys.isActive())return;
+  if(!s.textures.exists(textureKey))s.textures.addImage(textureKey,image);
+  // Repeated image across the scrolling stage, with the original wet street at the bottom.
+  for(let x=0;x<WORLD;x+=1024){s.add.image(x,0,textureKey).setOrigin(0,0).setDisplaySize(1024,H).setDepth(-250)}
+ };
+ if(image.complete&&image.naturalWidth)paint();else image.onload=paint;
 }
 function stageCreateSprite(s,key,x,y,scale){return s.add.sprite(x,y,key,0).setOrigin(.5,.94).setScale(scale*3.85).setDepth(y+4)}
 function createStage(){
