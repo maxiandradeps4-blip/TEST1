@@ -180,6 +180,7 @@ const FOES=[
  {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
+const WAVES_PER_LEVEL=4, LEVEL_COUNT=2;
 let audioCtx=null;
 const inputTouch={left:false,right:false,up:false,down:false,moveX:0,moveY:0,attack:false,special:false,jump:false};
 let resetJoystick=null;
@@ -327,7 +328,8 @@ function stageBackground(s){
  // Panorama nocturno extendido subido al repositorio por el usuario.
  const bgPath='Rainy Neon Blondie Cityscape.png';
  const key='blondie-rainy-neon-cityscape';
- s.add.rectangle(0,0,WORLD,H,0x0b0917).setOrigin(0,0).setDepth(-250);
+ s.stageBackdrop=[];
+ s.stageBackdrop.push(s.add.rectangle(0,0,WORLD,H,0x0b0917).setOrigin(0,0).setDepth(-250));
  const img=new Image();
  img.onload=()=>{
    if(!s.sys.isActive()||!img.naturalWidth)return;
@@ -335,7 +337,8 @@ function stageBackground(s){
    // Mantener proporciones del panorama: la ilustración recorre la escena.
    const tileWidth=img.naturalWidth*H/img.naturalHeight;
    for(let x=0;x<WORLD;x+=tileWidth){
-     s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(tileWidth,H).setDepth(-240);
+     const backdrop=s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(tileWidth,H).setDepth(-240);
+     if(wave>WAVES_PER_LEVEL)backdrop.destroy();else s.stageBackdrop.push(backdrop);
    }
  };
  img.onerror=()=>console.error('No se pudo cargar el fondo:',bgPath);
@@ -591,8 +594,43 @@ function spawnFoe(s,x,y,tier){
  s.enemies.push(foe);
  return foe;
 }
+
+function enterSecondLevel(s){
+ // Only replace the scenery. Keep the selected fighter, score, camera, and controls.
+ (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
+ s.stageBackdrop=[];
+ const add=obj=>{s.stageBackdrop.push(obj);return obj};
+ add(s.add.rectangle(0,0,WORLD,H,0x100c1b).setOrigin(0,0).setDepth(-250));
+ add(s.add.rectangle(0,0,WORLD,390,0x191127).setOrigin(0,0).setDepth(-246));
+ // A different location: the underground industrial afterparty.
+ for(let x=0;x<WORLD;x+=220){
+   add(s.add.rectangle(x+14,75,158,315,0x30243b).setOrigin(0,0).setDepth(-245));
+   add(s.add.rectangle(x+28,102,130,248,0x151020).setOrigin(0,0).setDepth(-244));
+   for(let y=128;y<332;y+=53){
+     add(s.add.rectangle(x+43,y,37,26,0xff4b9f,.3).setOrigin(0,0).setDepth(-243));
+     add(s.add.rectangle(x+99,y,37,26,0x48bdf5,.24).setOrigin(0,0).setDepth(-243));
+   }
+   add(s.add.rectangle(x+35,375,136,9,0xf84c98,.72).setOrigin(0,0).setDepth(-242));
+ }
+ add(s.add.rectangle(0,390,WORLD,H-390,0x262333).setOrigin(0,0).setDepth(-240));
+ add(s.add.rectangle(0,402,WORLD,7,0x57c8e6,.47).setOrigin(0,0).setDepth(-239));
+ for(let x=0;x<WORLD;x+=145){
+   add(s.add.rectangle(x,540,94,3,0x81697e,.5).setOrigin(0,0).setDepth(-238));
+ }
+ for(let x=250;x<WORLD;x+=600){
+   add(s.add.rectangle(x,156,12,240,0xb83171,.72).setDepth(-237));
+   add(s.add.rectangle(x+85,181,9,196,0x39b4d0,.6).setDepth(-237));
+ }
+ const blackout=add(s.add.rectangle(0,0,WORLD,H,0x05030b,.95).setOrigin(0,0).setDepth(900));
+ s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout)}});
+ s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
+ s.player.energy=clamp(s.player.energy+30,0,100);
+ toast('ETAPA 2 — ¡LA FIESTA CONTINÚA!',2400);
+}
+
 function addWave(){
  const s=this;wave++;s.waveSpawned=wave;
+ if(wave===WAVES_PER_LEVEL+1)enterSecondLevel(s);
  const total=Math.min(3+wave*2,11);let available=WORLD-220-s.player.x;
  const start=clamp(s.player.x+370,200,WORLD-240);
  for(let i=0;i<total;i++){
@@ -602,9 +640,10 @@ function addWave(){
   x=clamp(x,90,WORLD-90);
   spawnFoe(s,x,410+(i*31)%123,tier);
  }
- $('#stage-index').textContent=String(wave).padStart(2,'0');
- $('#wave-text').textContent=`OLEADA ${wave} / 4`;
- toast(wave===1?'¡A PELEAR!':`OLEADA ${wave} — ¡VAMOS!`,1300);
+ const level=Math.ceil(wave/WAVES_PER_LEVEL),localWave=((wave-1)%WAVES_PER_LEVEL)+1;
+ $('#stage-index').textContent=String(level).padStart(2,'0');
+ $('#wave-text').textContent=`ETAPA ${level} · OLEADA ${localWave} / ${WAVES_PER_LEVEL}`;
+ if(wave!==WAVES_PER_LEVEL+1)toast(wave===1?'¡A PELEAR!':`OLEADA ${localWave} — ¡VAMOS!`,1300);
 }
 function updateHud(p,enemies){
  $('#health-fill').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
@@ -793,7 +832,7 @@ function gameLoop(time,delta){
   s.nextWaveAt=time+2300;p.hp=clamp(p.hp+24,0,p.maxHp);p.energy=clamp(p.energy+18,0,100);
   toast('¡CALLE DESPEJADA! + VIDA',1300);
  }
- if(s.nextWaveAt&&time>s.nextWaveAt){s.nextWaveAt=0;if(wave>=4){s.finishTriggered=true;end(true)}else addWave.call(s)}
+ if(s.nextWaveAt&&time>s.nextWaveAt){s.nextWaveAt=0;if(wave>=WAVES_PER_LEVEL*LEVEL_COUNT){s.finishTriggered=true;end(true)}else addWave.call(s)}
  if(time>p.comboExpire)$('#combo').classList.add('hidden');
  updateHud(p,s.enemies);
 }
@@ -802,7 +841,7 @@ function end(win){
  state='ended';updateHiScore();audio(win?'win':'hurt');
  $('#end').classList.remove('hidden');$('#end-eyebrow').textContent=win?'★ VICTORIA TOTAL ★':'GAME OVER';
  $('#end-title').textContent=win?'¡LOS MANGUACOS GANAN!':'¡TE SACARON LA CRESTA!';
- $('#end-detail').textContent=`${HEROES[selected].name} · ${String(score).padStart(6,'0')} PUNTOS · ${wave} OLEADAS`;
+ $('#end-detail').textContent=`${HEROES[selected].name} · ${String(score).padStart(6,'0')} PUNTOS · ${Math.ceil(wave/WAVES_PER_LEVEL)} ETAPAS · ${wave} OLEADAS`;
  $('#end-score').textContent=String(score).padStart(6,'0');
  $('#end').style.setProperty('--winner-color',HEROES[selected].color);
 }
