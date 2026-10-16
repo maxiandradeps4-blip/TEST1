@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0f0b1a">
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
-  <title>MANGUACO FIGHTERS — Blondie 0.6 Mobile</title>
+  <title>MANGUACO FIGHTERS — Blondie 0.6.1 Mobile</title>
   <style>
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
@@ -69,7 +69,7 @@
   <section id="menu" class="overlay" aria-labelledby="logo">
     <div class="menu-shade"></div>
     <div class="menu-content">
-      <div class="topline"><span class="edition">✦ ARCADE EDITION <b>V0.6</b></span><span class="best-score">HI-SCORE <b id="menu-hiscore">000000</b></span></div>
+      <div class="topline"><span class="edition">✦ ARCADE EDITION <b>V0.6.1</b></span><span class="best-score">HI-SCORE <b id="menu-hiscore">000000</b></span></div>
       <div class="logo-stack"><div class="logo-kicker">GRUPO DE AMIGOS DEL POTO PRESENTA</div><h1 id="logo">MANGUACO <em>FIGHTERS</em></h1><p class="sub">SEIS AMIGOS. UNA CIUDAD. UN COMBATE ÉPICO.</p></div>
       <div class="menu-stage">
         <div class="hero-spotlight" id="selected-art-wrap" aria-hidden="true"><div class="glow-disc"></div><div class="light-floor"></div><img id="selected-art" src="data:," alt=""><div class="spotlight-no">01 <span>PLAYER SELECT</span></div></div>
@@ -117,8 +117,10 @@ async function initPixelArt(){
  const zipped=Uint8Array.from(atob(MF_B64),ch=>ch.charCodeAt(0));
  const unzipped=await new Response(new Blob([zipped]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer();
  const bytes=new Uint8Array(unzipped),w=bytes[0],h=bytes[1],charCount=bytes[2],poses=bytes[3],palsize=bytes[4];MF_W=w;MF_H=h;
- const characterIds=[...HEROES.map(x=>x.id),...FOES.map(x=>x.id)];
- if(charCount!==characterIds.length||poses!==8)throw new Error('Formato de sprites incorrecto');
+ // The packed legacy atlas includes 6 heroes + 3 original enemies.
+ // New enemies are loaded from external PNG files, not from MF_B64.
+ const characterIds=[...HEROES.map(x=>x.id),'punk','thug','heavy'];
+ if(charCount!==characterIds.length||poses!==8)throw new Error('Atlas integrado inválido: '+charCount+' personajes, '+poses+' poses');
  let pixelPos=5+charCount*palsize*4;const poseMap=[0,0,1,1,1,1,2,3,4,5,6,7,7];
  for(let c=0;c<characterIds.length;c++){
   const palette=bytes.subarray(5+c*palsize*4,5+(c+1)*palsize*4);
