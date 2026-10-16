@@ -216,8 +216,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016a');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of [...HEROES.map(x=>x.id),...FOES.map(x=>x.id)])this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('hero-source'))buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
+  scene:{preload(){this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of FOES.map(x=>x.id))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -284,7 +284,7 @@ function buildHeroSheets(scene){
    const w=img.width*scale,h=img.height*scale;
    out.drawImage(img,f*FW+(FW-w)/2,FH-h-3,w,h);
   });
-  const key=id+'-hero';
+  const key=id;
   if(scene.textures.exists(key))scene.textures.remove(key);
   scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
  });
@@ -355,7 +355,7 @@ function buildVillainSheets(scene){
  if(scene.textures.exists(key))scene.textures.remove(key);
  scene.textures.addSpriteSheet(key,sheet,{frameWidth:FW,frameHeight:FH});
 }
-function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');const hero=!foe&&s.textures.exists(key+'-hero');const sizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};return s.add.sprite(x,y,foe?'goth-villain':hero?key+'-hero':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:hero?(sizes[key]||1)*.96:scale*3.85).setDepth(y+4)}
+function stageCreateSprite(s,key,x,y,scale){const foe=['punk','thug','heavy'].includes(key)&&s.textures.exists('goth-villain');const hero=!foe&&HEROES.some(h=>h.id===key);const sizes={barb:.87,chris:.97,sebilove:1.08,coni:.98,fe:.85,maxi:1.13};return s.add.sprite(x,y,foe?'goth-villain':key,0).setOrigin(.5,.94).setScale(foe?scale*.92:hero?(sizes[key]||1)*.96:scale*3.85).setDepth(y+4)}
 function createStage(){
  const s=this;stageBackground(s);
  s.cameras.main.setBounds(0,0,WORLD,H);
