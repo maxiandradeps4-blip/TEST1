@@ -364,9 +364,12 @@ function buildHeroSheets(scene){
   const out=sheet.getContext('2d',{willReadFrequently:true});out.imageSmoothingEnabled=false;
   const poses=[];
   for(let j=0;j<8;j++){
-   const x=Math.max(0,Math.floor(xs[j][0]*sx)),y=Math.max(0,Math.floor((rows[row]+2)*sy));
-   const w=Math.min(W-x,Math.ceil((xs[j][1]-xs[j][0])*sx));
-   const h=Math.min(H-y,Math.ceil((rows[row+1]-rows[row]-4)*sy));
+   // SebiLove needs slightly wider source bounds; preserve all other fighters.
+   const padX=id==='sebilove'?14:0,padTop=id==='sebilove'?8:0,padBottom=id==='sebilove'?10:0;
+   const x=Math.max(0,Math.floor((xs[j][0]-padX)*sx));
+   const y=Math.max(0,Math.floor((rows[row]+2-padTop)*sy));
+   const w=Math.min(W-x,Math.ceil((xs[j][1]-xs[j][0]+padX*2)*sx));
+   const h=Math.min(H-y,Math.ceil((rows[row+1]-rows[row]-4+padTop+padBottom)*sy));
    const crop=document.createElement('canvas');crop.width=w;crop.height=h;
    const t=crop.getContext('2d',{willReadFrequently:true});t.drawImage(src,x,y,w,h,0,0,w,h);
    const im=t.getImageData(0,0,w,h),d=im.data;
