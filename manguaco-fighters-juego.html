@@ -178,6 +178,7 @@ const FOES=[
  {id:'thug',hp:82,speed:75,damage:10,reach:59,size:.73,points:160},
  {id:'heavy',hp:130,speed:50,damage:16,reach:66,size:.83,points:300},
  {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
+ {id:'fox-warrior',name:'GUERRERO ZORRO',hp:145,speed:76,damage:17,reach:65,size:.8,points:330},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
 const WAVES_PER_LEVEL=4, LEVEL_COUNT=2;
@@ -314,8 +315,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+  scene:{preload(){this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -557,14 +558,43 @@ function buildVillainSheets(scene){
 const HERO_HEIGHT=170;
 const HERO_PROPORTIONS={barb:.91,chris:1,sebilove:1.09,coni:1.02,fe:.91,maxi:1.404};
 function heroScaleFor(sprite,id){return HERO_HEIGHT*(HERO_PROPORTIONS[id]||1)/sprite.frame.height}
+function buildFoxWarriorSheets(scene){
+ const src=scene.textures.get('fox-warrior-source').getSourceImage();
+ const FW=220,FH=260,sequence=[0,0,1,2,1,2,3,3,4,4,5,5,6];
+ const sheet=document.createElement('canvas');sheet.width=FW*13;sheet.height=FH;
+ const out=sheet.getContext('2d');out.imageSmoothingEnabled=false;
+ const crops=[];
+ for(let j=0;j<7;j++){
+  const x=Math.floor(j*src.width/7),end=Math.floor((j+1)*src.width/7);
+  const w=end-x,h=src.height;
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,x,0,w,h,0,0,w,h);
+  const im=ctx.getImageData(0,0,w,h),d=im.data;
+  for(let p=0;p<d.length;p+=4){
+   const lo=Math.min(d[p],d[p+1],d[p+2]),hi=Math.max(d[p],d[p+1],d[p+2]);
+   if(lo>247&&hi-lo<13)d[p+3]=0;
+   else if(lo>231&&hi-lo<16)d[p+3]=Math.min(d[p+3],Math.round((247-lo)/16*255));
+  }
+  ctx.putImageData(im,0,0);crops.push(canvas);
+ }
+ sequence.forEach((index,j)=>{
+  const img=crops[index],scale=Math.min(FW*.91/img.width,FH*.93/img.height);
+  const w=img.width*scale,h=img.height*scale;
+  out.drawImage(img,j*FW+(FW-w)/2,FH-h-4,w,h);
+ });
+ if(scene.textures.exists('fox-warrior-villain'))scene.textures.remove('fox-warrior-villain');
+ scene.textures.addSpriteSheet('fox-warrior-villain',sheet,{frameWidth:FW,frameHeight:FH});
+}
+
 function stageCreateSprite(s,key,x,y,scale){
  const goth=['punk','thug','heavy'].includes(key);
  const newPunk=key==='street-punk';
+ const fox=key==='fox-warrior';
  const hero=HEROES.some(h=>h.id===key);
- const texture=newPunk&&s.textures.exists('street-punk-villain')
+ const texture=fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
   ?'street-punk-villain':(goth||newPunk)&&s.textures.exists('goth-villain')?'goth-villain':key;
  const sprite=s.add.sprite(x,y,texture,0).setOrigin(.5,.94).setDepth(y+4);
- sprite.setScale(hero?heroScaleFor(sprite,key):(goth||newPunk)?scale*.92:scale*3.85);
+ sprite.setScale(hero?heroScaleFor(sprite,key):(goth||newPunk||fox)?scale*.92:scale*3.85);
  return sprite;
 }
 function createStage(){
@@ -633,7 +663,7 @@ function addWave(){
  const total=Math.min(3+wave*2,11);let available=WORLD-220-s.player.x;
  const start=clamp(s.player.x+370,200,WORLD-240);
  for(let i=0;i<total;i++){
-  const tier=i%4===1?3:i%5===0?2:i%3===0?1:0;
+  const tier=wave>WAVES_PER_LEVEL&&i%5===0?4:i%4===1?3:i%5===0?2:i%3===0?1:0;
   let x=start+i*87;
   if(x>WORLD-90)x=s.player.x-280-i*42;
   x=clamp(x,90,WORLD-90);
