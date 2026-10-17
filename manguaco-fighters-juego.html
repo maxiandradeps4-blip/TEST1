@@ -589,43 +589,39 @@ function spawnFoe(s,x,y,tier){
  const cfg=FOES[tier];const spr=stageCreateSprite(s,cfg.id,x,y,cfg.size);
  const sh=s.add.ellipse(x,y,69,12,0x06040c,.4).setDepth(y-2);
  const hp=cfg.hp+(wave-1)*14;
- const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage,
+ const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage*1.3,
   ready:0,windup:0,windupDone:false,stun:0,inv:0,anim:0,hitGlow:0,knockX:0};
  s.enemies.push(foe);
  return foe;
 }
 
 function enterSecondLevel(s){
- // Only replace the scenery. Keep the selected fighter, score, camera, and controls.
+ // WHIP ME — stage two. Preserve the fighter, score, and gameplay.
  (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
  s.stageBackdrop=[];
  const add=obj=>{s.stageBackdrop.push(obj);return obj};
- add(s.add.rectangle(0,0,WORLD,H,0x100c1b).setOrigin(0,0).setDepth(-250));
- add(s.add.rectangle(0,0,WORLD,390,0x191127).setOrigin(0,0).setDepth(-246));
- // A different location: the underground industrial afterparty.
- for(let x=0;x<WORLD;x+=220){
-   add(s.add.rectangle(x+14,75,158,315,0x30243b).setOrigin(0,0).setDepth(-245));
-   add(s.add.rectangle(x+28,102,130,248,0x151020).setOrigin(0,0).setDepth(-244));
-   for(let y=128;y<332;y+=53){
-     add(s.add.rectangle(x+43,y,37,26,0xff4b9f,.3).setOrigin(0,0).setDepth(-243));
-     add(s.add.rectangle(x+99,y,37,26,0x48bdf5,.24).setOrigin(0,0).setDepth(-243));
+ add(s.add.rectangle(0,0,WORLD,H,0x12091b).setOrigin(0,0).setDepth(-250));
+ const bgPath='6ab41c17-232f-4bd8-b31d-be06601bfb71.png';
+ const key='whip-me-stage-background';
+ const img=new Image();
+ img.onload=()=>{
+   if(!s.sys.isActive()||wave<=WAVES_PER_LEVEL)return;
+   if(!s.textures.exists(key))s.textures.addImage(key,img);
+   // Fill the stage without distorting the supplied pixel-art panorama.
+   const tileWidth=img.naturalWidth*H/img.naturalHeight;
+   for(let x=0;x<WORLD;x+=tileWidth){
+     add(s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(tileWidth,H).setDepth(-240));
    }
-   add(s.add.rectangle(x+35,375,136,9,0xf84c98,.72).setOrigin(0,0).setDepth(-242));
- }
- add(s.add.rectangle(0,390,WORLD,H-390,0x262333).setOrigin(0,0).setDepth(-240));
- add(s.add.rectangle(0,402,WORLD,7,0x57c8e6,.47).setOrigin(0,0).setDepth(-239));
- for(let x=0;x<WORLD;x+=145){
-   add(s.add.rectangle(x,540,94,3,0x81697e,.5).setOrigin(0,0).setDepth(-238));
- }
- for(let x=250;x<WORLD;x+=600){
-   add(s.add.rectangle(x,156,12,240,0xb83171,.72).setDepth(-237));
-   add(s.add.rectangle(x+85,181,9,196,0x39b4d0,.6).setDepth(-237));
- }
+ };
+ img.onerror=()=>console.error('No se pudo cargar el escenario Whip Me:',bgPath);
+ img.src=encodeURI(bgPath);
  const blackout=add(s.add.rectangle(0,0,WORLD,H,0x05030b,.95).setOrigin(0,0).setDepth(900));
- s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout)}});
+ s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{
+   blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout);
+ }});
  s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
  s.player.energy=clamp(s.player.energy+30,0,100);
- toast('ETAPA 2 — ¡LA FIESTA CONTINÚA!',2400);
+ toast('ETAPA 2 — WHIP ME',2400);
 }
 
 function addWave(){
