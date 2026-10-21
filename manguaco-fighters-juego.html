@@ -387,8 +387,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-original'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+  scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('welson-poses-source',encodeURI('welson poses.png')+'?v=20261021a');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-poses-source'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V8 · WELSON';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -660,19 +660,45 @@ function buildFoxWarriorSheets(scene){
 
 
 function buildWelsonSheets(scene){
- // Convierte el arte de Welson en trece cuadros compatibles con el sistema arcade.
- const src=scene.textures.get('welson-original').getSourceImage();
- const FW=184,FH=260,frames=13;
- const sheet=document.createElement('canvas');sheet.width=FW*frames;sheet.height=FH;
+ // Seis poses originales: defensa, dos pasos, puñetazo, patada y daño.
+ // Las poses de ataque sobresalen de la cuadrícula; se recortan con márgenes propios.
+ const src=scene.textures.get('welson-poses-source').getSourceImage();
+ const sourceCanvas=document.createElement('canvas');
+ sourceCanvas.width=src.width;sourceCanvas.height=src.height;
+ const sourceCtx=sourceCanvas.getContext('2d',{willReadFrequently:true});
+ sourceCtx.drawImage(src,0,0);
+ const sx=src.width/1536,sy=src.height/1024;
+ const regions=[
+  [0,0,512,512],[512,0,512,512],[1024,0,512,512],
+  [0,512,566,512],[566,512,526,512],[1092,512,444,512]
+ ];
+ const FW=260,FH=280,sequence=[0,0,1,2,1,2,3,3,4,4,5,4,5];
+ const sheet=document.createElement('canvas');sheet.width=FW*sequence.length;sheet.height=FH;
  const ctx=sheet.getContext('2d');ctx.imageSmoothingEnabled=false;
- const offsets=[0,-2,-4,-2,0,-2,0,-1,0,-1,5,-6,3];
- const tilts=[0,-.012,.012,-.012,.012,-.012,-.06,.06,.1,-.09,-.16,-.04,.06];
- const destH=248,destW=src.width/src.height*destH;
- for(let i=0;i<frames;i++){
-  ctx.save();ctx.translate(i*FW+FW/2,FH-4);
-  ctx.rotate(tilts[i]);ctx.drawImage(src,-destW/2,-destH+offsets[i],destW,destH);
-  ctx.restore();
- }
+ const poses=regions.map(([rx,ry,rw,rh])=>{
+  const x=Math.floor(rx*sx),y=Math.floor(ry*sy);
+  const w=Math.min(src.width-x,Math.ceil(rw*sx)),h=Math.min(src.height-y,Math.ceil(rh*sy));
+  const pixels=sourceCtx.getImageData(x,y,w,h).data;
+  let left=w,top=h,right=-1,bottom=-1;
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){
+   if(pixels[(yy*w+xx)*4+3]<36)continue;
+   left=Math.min(left,xx);right=Math.max(right,xx);
+   top=Math.min(top,yy);bottom=Math.max(bottom,yy);
+  }
+  if(right<left||bottom<top)return null;
+  left=Math.max(0,left-3);top=Math.max(0,top-3);
+  right=Math.min(w-1,right+3);bottom=Math.min(h-1,bottom+3);
+  const pose=document.createElement('canvas');
+  pose.width=right-left+1;pose.height=bottom-top+1;
+  pose.getContext('2d').drawImage(sourceCanvas,x+left,y+top,pose.width,pose.height,0,0,pose.width,pose.height);
+  return pose;
+ });
+ if(poses.some(p=>!p))throw new Error('No se pudieron recortar las seis poses de Welson');
+ sequence.forEach((index,i)=>{
+  const pose=poses[index],scale=Math.min((FW-12)/pose.width,(FH-8)/pose.height);
+  const w=Math.round(pose.width*scale),h=Math.round(pose.height*scale);
+  ctx.drawImage(pose,i*FW+(FW-w)/2,FH-h-4,w,h);
+ });
  if(scene.textures.exists('welson-villain'))scene.textures.remove('welson-villain');
  scene.textures.addSpriteSheet('welson-villain',sheet,{frameWidth:FW,frameHeight:FH});
 }
