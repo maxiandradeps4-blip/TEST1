@@ -10,6 +10,14 @@
 .level-picker{margin:7px 0 10px}.level-picker-title{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#fff;font-weight:900;font-size:16px;letter-spacing:1.4px;margin-bottom:6px}.level-picker-title small{font:700 9px 'Space Mono',monospace;letter-spacing:0;color:#bfb0d2}.level-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.level-option{display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:5px 10px;background:#201a31;border:2px solid #685872;color:#d3cadb;font-weight:900;font-size:16px;cursor:pointer;transition:background .12s,border-color .12s}.level-option span{color:var(--yellow);font:900 12px 'Space Mono',monospace}.level-option strong{white-space:nowrap}.level-option:hover{background:#402a4b}.level-option.active{border-color:var(--yellow);background:#63304f;color:#fff;box-shadow:inset 0 0 0 1px #ffe04a55}
 @media(max-width:620px){#menu{align-items:flex-start}#menu .menu-content{max-height:none;padding-bottom:25px}.level-picker{margin:2px 0 7px}.level-picker-title{font-size:13px}.level-picker-title small{font-size:7px}.level-options{gap:4px}.level-option{min-height:35px;padding:4px 5px;gap:4px;font-size:12px}.level-option span{font-size:10px}}
 @media(max-height:660px){.level-picker{margin:3px 0 5px}.level-option{min-height:33px}.level-picker-title{margin-bottom:3px}}
+/* Miniaturas de los escenarios: el nombre sigue visible bajo cada fondo. */
+.level-option{display:block;padding:0;overflow:hidden;min-height:0;text-align:left}
+.level-option .level-preview{display:block;width:100%;height:52px;object-fit:cover;object-position:center;image-rendering:pixelated;filter:saturate(.82) brightness(.82);transition:filter .12s}
+.level-option .level-caption{display:flex;align-items:center;justify-content:center;gap:8px;padding:5px 4px;min-height:30px}
+.level-option .level-caption strong{font-size:14px;letter-spacing:.3px}
+.level-option.active .level-preview{filter:saturate(1.1) brightness(1.08)}
+@media(max-width:620px){.level-option .level-preview{height:37px}.level-option .level-caption{gap:4px;min-height:25px;padding:3px 2px}.level-option .level-caption strong{font-size:11px}}
+@media(max-height:660px){.level-option .level-preview{height:32px}.level-option .level-caption{min-height:23px;padding:2px}.level-option .level-caption strong{font-size:12px}}
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
 #game-wrap{height:100dvh;width:100vw;position:relative;background:#141020;overflow:hidden;isolation:isolate}#game{position:absolute;inset:0}#game canvas{display:block;image-rendering:auto}
@@ -84,9 +92,9 @@
           <div class="level-picker" role="group" aria-label="Elegir etapa inicial">
             <div class="level-picker-title">ELIGE LA ETAPA <small>DESDE AQUÍ COMIENZA TU PARTIDA</small></div>
             <div class="level-options">
-              <button class="level-option active" type="button" data-level="1" aria-pressed="true"><span>01</span><strong>BLONDIE</strong></button>
-              <button class="level-option" type="button" data-level="2" aria-pressed="false"><span>02</span><strong>WHIP ME</strong></button>
-              <button class="level-option" type="button" data-level="3" aria-pressed="false"><span>03</span><strong>NIVEL 3</strong></button>
+              <button class="level-option active" type="button" data-level="1" aria-pressed="true"><img class="level-preview" src="Rainy%20Neon%20Blondie%20Cityscape.png" alt="" loading="eager"><span class="level-caption"><span>01</span><strong>BLONDIE</strong></span></button>
+              <button class="level-option" type="button" data-level="2" aria-pressed="false"><img class="level-preview" src="fondo-whipme.png" alt="" loading="eager"><span class="level-caption"><span>02</span><strong>WHIP ME</strong></span></button>
+              <button class="level-option" type="button" data-level="3" aria-pressed="false"><img class="level-preview" src="e3194510-5e46-4250-a383-953d5e925ad7.png" alt="" loading="eager"><span class="level-caption"><span>03</span><strong>ALGARROBO</strong></span></button>
             </div>
           </div>
           <button class="big-btn" id="play"><span>▶ INICIAR PARTIDA</span><small>ETAPA 01</small></button>
@@ -706,7 +714,7 @@ function enterThirdLevel(s){
  }});
  s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
  s.player.energy=clamp(s.player.energy+30,0,100);
- toast('ETAPA 3 — ¡A SEGUIR PELEANDO!',2400);
+ toast('ETAPA 3 — ALGARROBO',2400);
 }
 
 function addWave(){
@@ -724,7 +732,7 @@ function addWave(){
  }
  const level=Math.ceil(wave/WAVES_PER_LEVEL),localWave=((wave-1)%WAVES_PER_LEVEL)+1;
  $('#stage-index').textContent=String(level).padStart(2,'0');
- $('#stage-name').textContent=['BLONDIE — NOCHE UNDERGROUND','WHIP ME — DISCOTECA','NIVEL 3 — NUEVO ESCENARIO'][level-1]||'MANGUACO FIGHTERS';
+ $('#stage-name').textContent=['BLONDIE — NOCHE UNDERGROUND','WHIP ME — DISCOTECA','ALGARROBO — JUEGOS'][level-1]||'MANGUACO FIGHTERS';
  $('#wave-text').textContent=`ETAPA ${level} · OLEADA ${localWave} / ${WAVES_PER_LEVEL}`;
  if(localWave!==1||level===1)toast(wave===1?'¡A PELEAR!':`OLEADA ${localWave} — ¡VAMOS!`,1300);
 }
