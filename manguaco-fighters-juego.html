@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0f0b1a">
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
-  <title>MANGUACO FIGHTERS — Blondie 0.6.1 Mobile</title>
+  <title>MANGUACO FIGHTERS — WELSON FINAL BOSS</title>
   <style>
 .level-picker{margin:7px 0 10px}.level-picker-title{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#fff;font-weight:900;font-size:16px;letter-spacing:1.4px;margin-bottom:6px}.level-picker-title small{font:700 9px 'Space Mono',monospace;letter-spacing:0;color:#bfb0d2}.level-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.level-option{display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:5px 10px;background:#201a31;border:2px solid #685872;color:#d3cadb;font-weight:900;font-size:16px;cursor:pointer;transition:background .12s,border-color .12s}.level-option span{color:var(--yellow);font:900 12px 'Space Mono',monospace}.level-option strong{white-space:nowrap}.level-option:hover{background:#402a4b}.level-option.active{border-color:var(--yellow);background:#63304f;color:#fff;box-shadow:inset 0 0 0 1px #ffe04a55}
 @media(max-width:620px){#menu{align-items:flex-start}#menu .menu-content{max-height:none;padding-bottom:25px}.level-picker{margin:2px 0 7px}.level-picker-title{font-size:13px}.level-picker-title small{font-size:7px}.level-options{gap:4px}.level-option{min-height:35px;padding:4px 5px;gap:4px;font-size:12px}.level-option span{font-size:10px}}
@@ -70,6 +70,29 @@
  #touch-controls .actions .btn-jump{width:64px;height:64px}
 }
 
+
+/* WELSON — escena de villano y barra de jefe final. */
+.welson-interlude{z-index:42;background:radial-gradient(circle at 68% 38%,#661639 0,#190a1c 45%,#05040d 100%);padding:18px;overscroll-behavior:contain}
+.welson-interlude:before{content:'';pointer-events:none;position:absolute;inset:0;opacity:.16;background:repeating-linear-gradient(0deg,transparent 0 4px,#fff 5px 6px)}
+.welson-panel{position:relative;display:grid;grid-template-columns:42% 1fr;align-items:center;gap:18px;width:min(1060px,98vw);max-height:95dvh;min-height:min(520px,82dvh);background:linear-gradient(140deg,#251223,#110c1a 60%,#26101e);border:3px solid #ff4a75;box-shadow:12px 12px 0 #05030b,0 0 80px #ff16452c;overflow:hidden}
+.welson-portrait{position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:100%;overflow:hidden;background:radial-gradient(ellipse at 50% 50%,#eb184a36,transparent 64%)}
+.welson-portrait:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,#ff25460c 0 4px,transparent 4px 19px)}
+.welson-portrait img{position:relative;display:block;width:100%;max-height:83dvh;height:500px;object-fit:contain;object-position:center bottom;image-rendering:pixelated;filter:drop-shadow(9px 0 0 #c4092c) drop-shadow(0 12px 6px #0009);animation:welson-rise .5s both,welson-idle 2s .5s ease-in-out infinite}
+.welson-copy{padding:28px clamp(16px,3vw,35px) 28px 0;min-width:0}
+.welson-kicker{font:800 12px 'Space Mono',monospace;color:#ffcf56;letter-spacing:3px}
+.welson-copy h2{margin:8px 0 16px;font-size:clamp(66px,11vw,140px);font-weight:900;font-style:italic;color:#ff4265;letter-spacing:-3px;line-height:.85;text-shadow:6px 7px 0 #07030a}
+.welson-quote{font-size:clamp(23px,3.4vw,39px);font-weight:900;font-style:italic;line-height:1.05;max-width:640px;margin:0 0 24px;color:#fff;text-shadow:2px 2px #000}
+.welson-note{color:#ffc96a;font:800 12px 'Space Mono',monospace;letter-spacing:1px;margin-bottom:12px}
+#welson-next{width:100%;margin:0;font-size:clamp(20px,3vw,30px)}
+#boss-hud{position:absolute;z-index:17;left:50%;top:84px;transform:translateX(-50%);width:min(520px,55vw);pointer-events:none;text-align:center;background:#100710d9;border:2px solid #ff3663;padding:7px 11px;box-shadow:4px 4px 0 #050208}
+#boss-hud b{display:block;color:#ff6586;font-size:22px;font-weight:900;letter-spacing:5px;line-height:1.1}
+.boss-life{height:13px;background:#281526;border:1px solid #ffd9db;margin-top:5px}
+#boss-health-fill{width:100%;height:100%;background:linear-gradient(90deg,#ff164e,#ffcc42);transition:width .15s}
+@keyframes welson-rise{from{transform:translateY(35px) scale(.92);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes welson-idle{50%{transform:translateY(-5px)}}
+@media(max-width:620px){.welson-interlude{padding:7px}.welson-panel{display:flex;flex-direction:column;gap:0;width:100%;min-height:0;max-height:97dvh;overflow-y:auto}.welson-portrait{width:100%;min-height:0;height:26dvh;flex:none}.welson-portrait img{height:100%;max-height:none;object-position:center 30%}.welson-copy{padding:9px 15px 14px;width:100%}.welson-kicker{font-size:9px;letter-spacing:1.4px}.welson-copy h2{font-size:clamp(58px,18vw,82px);margin:4px 0 10px}.welson-quote{font-size:clamp(22px,6vw,30px);margin-bottom:15px}.welson-note{font-size:10px;margin-bottom:8px}#boss-hud{top:59px;width:min(270px,69vw);padding:4px 7px}#boss-hud b{font-size:12px;letter-spacing:2px}.boss-life{height:8px}}
+@media(max-height:430px) and (orientation:landscape){.welson-panel{display:grid;grid-template-columns:35% 1fr;min-height:0;max-height:96dvh}.welson-portrait{height:92dvh}.welson-copy{padding:10px 13px}.welson-copy h2{font-size:clamp(44px,8vw,78px);margin:2px 0}.welson-quote{font-size:clamp(19px,3vw,28px);margin:7px 0}.welson-note{font-size:9px}.welson-kicker{font-size:9px}#welson-next{padding:6px;font-size:18px}#boss-hud{top:52px}}
+
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
   
@@ -108,10 +131,23 @@
     <div class="stage-hud"><b>STAGE <span id="stage-index">01</span></b><span id="stage-name">BLONDIE — NOCHE UNDERGROUND</span></div>
     <div class="enemy-hud"><button id="mute" aria-pressed="true">SONIDO ON</button><button id="pause-btn">Ⅱ PAUSA</button><div class="foe-label">ENEMIGOS <strong id="enemy-counter">00</strong></div><span id="wave-text">OLEADA 1 / 4</span></div>
   </section>
+  <div id="boss-hud" class="hidden" aria-label="Vida de Welson"><b>★ WELSON — JEFE FINAL ★</b><div class="boss-life"><div id="boss-health-fill"></div></div></div>
   <div id="combo" class="combo hidden" aria-live="polite">3 HITS</div>
   <div id="toast" class="toast hidden" aria-live="polite"></div>
   <section id="load-screen" class="overlay load hidden"><div><span>PREPARANDO LA BATALLA</span><div class="load-bar"><div id="load-fill"></div></div><small>CARGANDO PERSONAJES Y ANIMACIONES...</small></div></section>
   <section id="pause" class="overlay pause hidden"><div class="end-panel"><div class="eyebrow">ARCADE MODE</div><h2>PAUSA</h2><button id="resume-btn" class="big-btn">▶ CONTINUAR</button><button id="pause-menu" class="secondary-btn">VOLVER AL SELECTOR</button></div></section>
+  <section id="welson-interlude" class="overlay welson-interlude hidden" aria-labelledby="welson-title" role="dialog" aria-modal="true">
+    <div class="welson-panel">
+      <div class="welson-portrait"><img src="welson-villano.png" alt="Welson, el antagonista con lentes, chaqueta negra y puños levantados"></div>
+      <div class="welson-copy">
+        <div class="welson-kicker" id="welson-cleared">ETAPA 01 SUPERADA</div>
+        <h2 id="welson-title">WELSON</h2>
+        <p class="welson-quote" id="welson-quote"></p>
+        <div class="welson-note">EL VILLANO MÁS VILLANO TE DESAFÍA</div>
+        <button class="big-btn" id="welson-next" type="button">▶ SIGUIENTE ETAPA</button>
+      </div>
+    </div>
+  </section>
   <section id="end" class="overlay end hidden" aria-live="polite"><div class="end-panel"><div class="eyebrow" id="end-eyebrow">GAME OVER</div><h2 id="end-title">FIN DEL JUEGO</h2><p id="end-detail"></p><div class="final-score"><span>SCORE</span><strong id="end-score">000000</strong></div><button id="retry" class="big-btn">↻ JUGAR OTRA VEZ</button><button id="menu-btn" class="secondary-btn">CAMBIAR PERSONAJE</button></div></section>
   <nav id="touch-controls" class="hidden" aria-label="Controles táctiles">
     <div class="pad">
@@ -198,8 +234,9 @@ const FOES=[
  {id:'heavy',hp:130,speed:50,damage:16,reach:66,size:.83,points:300},
  {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
  {id:'fox-warrior',name:'GUERRERO ZORRO',hp:145,speed:76,damage:17,reach:65,size:.8,points:330},
+ {id:'welson',name:'WELSON',hp:800,speed:77,damage:23,reach:90,size:2,points:5000},
 ];
-let game=null,stage=null,state='menu',selected=0,selectedLevel=1,score=0,wave=0,highScore=0,muted=false;
+let game=null,stage=null,state='menu',selected=0,selectedLevel=1,score=0,wave=0,highScore=0,muted=false,interludeContinue=null;
 const WAVES_PER_LEVEL=4, LEVEL_COUNT=3;
 let audioCtx=null;
 const inputTouch={left:false,right:false,up:false,down:false,moveX:0,moveY:0,attack:false,special:false,jump:false};
@@ -308,6 +345,7 @@ function setupMenu(){
    if(e.code==='ArrowRight'||e.code==='KeyD'){select(selected+1);e.preventDefault()}
    if(['Digit1','Digit2','Digit3','Numpad1','Numpad2','Numpad3'].includes(e.code)){selectLevel(Number(e.code.slice(-1)));e.preventDefault()}
    if(e.code==='Enter'){start();e.preventDefault()}}
+  else if(state==='interlude'&&(e.code==='Enter'||e.code==='Space')){e.preventDefault();if(!e.repeat)continueWelson()}
   else if(state==='playing'&&e.code==='Escape'){togglePause()}
   else if(state==='paused'&&e.code==='Escape'){togglePause()}
  });
@@ -320,13 +358,15 @@ function setupMenu(){
   btn.addEventListener('pointerdown',e=>{e.preventDefault();inputTouch[key]=true;btn.setPointerCapture(e.pointerId)}, {passive:false});
   for(const event of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(event,e=>{e.preventDefault();inputTouch[key]=false},{passive:false});
  }
+ $('#welson-next').addEventListener('click',continueWelson);
  select(0);selectLevel(1);$('#menu-hiscore').textContent=String(highScore).padStart(6,'0');
 }
 function toMenu(){
- state='menu';if(game){game.destroy(true);game=null}stage=null;
+ state='menu';interludeContinue=null;if(game){game.destroy(true);game=null}stage=null;
  clearTouchInput();
  $('#menu').classList.remove('hidden');$('#end').classList.add('hidden');$('#pause').classList.add('hidden');
  $('#hud').classList.add('hidden');$('#touch-controls').classList.add('hidden');$('#toast').classList.add('hidden');
+ $('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');
  $('#menu-hiscore').textContent=String(highScore).padStart(6,'0');
 }
 async function start(){
@@ -334,7 +374,8 @@ async function start(){
  if(!MF_READY){alert('No se pudieron cargar los personajes. Actualiza la página e inténtalo otra vez.');return;}
  if(!window.Phaser){alert('No se pudo cargar Phaser. Revisa la conexión y vuelve a intentar.');return}
  if(game){game.destroy(true);game=null;$('#game').replaceChildren()}
- state='loading';score=0;wave=(selectedLevel-1)*WAVES_PER_LEVEL;clearTouchInput();
+ state='loading';interludeContinue=null;score=0;wave=(selectedLevel-1)*WAVES_PER_LEVEL;clearTouchInput();
+ $('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');
  $('#menu').classList.add('hidden');$('#end').classList.add('hidden');$('#pause').classList.add('hidden');
  $('#hud').classList.remove('hidden');$('#touch-controls').classList.remove('hidden');
  $('#hud-name').textContent=HEROES[selected].name;$('#hud-name').style.color=HEROES[selected].color;
@@ -346,8 +387,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-  scene:{preload(){this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
-   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+  scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3')},
+   create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-original'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='SPRITES V7 · PUNK ROJO';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -617,15 +658,34 @@ function buildFoxWarriorSheets(scene){
  scene.textures.addSpriteSheet('fox-warrior-villain',sheet,{frameWidth:FW,frameHeight:FH});
 }
 
+
+function buildWelsonSheets(scene){
+ // Convierte el arte de Welson en trece cuadros compatibles con el sistema arcade.
+ const src=scene.textures.get('welson-original').getSourceImage();
+ const FW=184,FH=260,frames=13;
+ const sheet=document.createElement('canvas');sheet.width=FW*frames;sheet.height=FH;
+ const ctx=sheet.getContext('2d');ctx.imageSmoothingEnabled=false;
+ const offsets=[0,-2,-4,-2,0,-2,0,-1,0,-1,5,-6,3];
+ const tilts=[0,-.012,.012,-.012,.012,-.012,-.06,.06,.1,-.09,-.16,-.04,.06];
+ const destH=248,destW=src.width/src.height*destH;
+ for(let i=0;i<frames;i++){
+  ctx.save();ctx.translate(i*FW+FW/2,FH-4);
+  ctx.rotate(tilts[i]);ctx.drawImage(src,-destW/2,-destH+offsets[i],destW,destH);
+  ctx.restore();
+ }
+ if(scene.textures.exists('welson-villain'))scene.textures.remove('welson-villain');
+ scene.textures.addSpriteSheet('welson-villain',sheet,{frameWidth:FW,frameHeight:FH});
+}
+
 function stageCreateSprite(s,key,x,y,scale){
  const goth=['punk','thug','heavy'].includes(key);
  const newPunk=key==='street-punk';
- const fox=key==='fox-warrior';
+ const fox=key==='fox-warrior',welson=key==='welson';
  const hero=HEROES.some(h=>h.id===key);
- const texture=fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
+ const texture=welson&&s.textures.exists('welson-villain')?'welson-villain':fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
   ?'street-punk-villain':(goth||newPunk)&&s.textures.exists('goth-villain')?'goth-villain':key;
  const sprite=s.add.sprite(x,y,texture,0).setOrigin(.5,.94).setDepth(y+4);
- sprite.setScale(hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
+ sprite.setScale(welson?(HERO_HEIGHT*2/sprite.frame.height):hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
  return sprite;
 }
 function createStage(){
@@ -639,7 +699,7 @@ function createStage(){
  const p=s.player;
  p.shadow=s.add.ellipse(p.x,p.y,77,15,0x06040c,.45).setDepth(p.y-1);
  p.sprite=stageCreateSprite(s,h.id,p.x,p.y,1.07);
- s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
+ s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.bossActive=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
  s.cameras.main.startFollow(p.sprite,true,.095,.15,0,50);
  s.cameras.main.setDeadzone(300,160);
  s.cameras.main.setZoom(1);
@@ -649,10 +709,42 @@ function toast(text,duration=900){
  const el=$('#toast');el.textContent=text;el.classList.remove('hidden');
  clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.add('hidden'),duration);
 }
+
+const WELSON_LINES=[
+ 'Soy un 10, pero la tengo chica. ¡Nunca me vencerán, manguacos!',
+ '¿Así que sobrevivieron a Whip Me? ¡En Algarrobo les voy a sacar la cresta!',
+ 'Se acabó el paseo, manguacos. ¡Ahora tendrán que pelear conmigo!'
+];
+function showWelsonInterlude(s,completedLevel,onContinue){
+ state='interlude';interludeContinue=onContinue;clearTouchInput();
+ $('#touch-controls').classList.add('hidden');
+ $('#welson-cleared').textContent='★ ETAPA '+String(completedLevel).padStart(2,'0')+' SUPERADA ★';
+ $('#welson-quote').textContent=WELSON_LINES[completedLevel-1];
+ $('#welson-next').textContent=completedLevel===LEVEL_COUNT?'⚔ ENFRENTAR A WELSON':'▶ SIGUIENTE ETAPA';
+ $('#welson-interlude').classList.remove('hidden');audio('power');
+ $('#welson-next').focus({preventScroll:true});
+}
+function continueWelson(){
+ if(state!=='interlude'||!interludeContinue)return;
+ const next=interludeContinue;interludeContinue=null;
+ $('#welson-interlude').classList.add('hidden');
+ $('#touch-controls').classList.remove('hidden');
+ clearTouchInput();state='playing';next();
+}
+function spawnWelsonBoss(s){
+ s.bossActive=true;s.enemies=[];
+ const spawnX=clamp(s.player.x+300,180,WORLD-180);
+ spawnFoe(s,spawnX,clamp(s.player.y+5,MIN_Y,MAX_Y),FOES.length-1);
+ $('#boss-hud').classList.remove('hidden');
+ $('#wave-text').textContent='JEFE FINAL · WELSON';
+ toast('¡WELSON, EL JEFE FINAL!',2600);
+ s.cameras.main.flash(230,255,20,90);audio('hurt');
+}
+
 function spawnFoe(s,x,y,tier){
  const cfg=FOES[tier];const spr=stageCreateSprite(s,cfg.id,x,y,cfg.size);
  const sh=s.add.ellipse(x,y,69,12,0x06040c,.4).setDepth(y-2);
- const hp=cfg.hp+(wave-1)*14;
+ const hp=cfg.hp+(cfg.id==='welson'?0:(wave-1)*14);
  const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage*1.3,
   ready:0,windup:0,windupDone:false,stun:0,inv:0,anim:0,hitGlow:0,knockX:0};
  s.enemies.push(foe);
@@ -741,6 +833,9 @@ function updateHud(p,enemies){
  $('#energy-fill').style.width=clamp(p.energy,0,100)+'%';
  $('#score').textContent=String(score).padStart(6,'0');
  $('#enemy-counter').textContent=String(enemies.filter(e=>e.alive).length).padStart(2,'0');
+ const welson=enemies.find(e=>e.id==='welson'&&e.alive);
+ if(welson){$('#boss-hud').classList.remove('hidden');$('#boss-health-fill').style.width=clamp(welson.hp/welson.maxHp*100,0,100)+'%'}
+ else $('#boss-hud').classList.add('hidden');
  if(p.hp/p.maxHp<.25)$('#health-fill').classList.add('critical');else $('#health-fill').classList.remove('critical');
 }
 function spark(s,x,y,c,n=10,radius=55){
@@ -915,21 +1010,32 @@ function gameLoop(time,delta){
   // individual compact enemy health bars only after first hit
   if(e.hp<e.maxHp){
    if(!e.life){e.life=s.add.graphics().setDepth(1120)}
-   e.life.clear();e.life.fillStyle(0x090816,.92).fillRect(e.x-30,e.y-185,60,8);
-   e.life.fillStyle(0xec548a,1).fillRect(e.x-28,e.y-183,56*clamp(e.hp/e.maxHp,0,1),4);
+   const lifeY=e.y-(e.id==='welson'?365:185),lifeW=e.id==='welson'?170:60;
+   e.life.clear();e.life.fillStyle(0x090816,.92).fillRect(e.x-lifeW/2,lifeY,lifeW,8);
+   e.life.fillStyle(0xec548a,1).fillRect(e.x-lifeW/2+2,lifeY+2,(lifeW-4)*clamp(e.hp/e.maxHp,0,1),4);
   }
  }
  if(s.enemies.every(e=>!e.alive)&&!s.nextWaveAt&&!s.finishTriggered){
   s.nextWaveAt=time+2300;p.hp=clamp(p.hp+24,0,p.maxHp);p.energy=clamp(p.energy+18,0,100);
-  toast('¡CALLE DESPEJADA! + VIDA',1300);
+  toast(s.bossActive?'¡WELSON DERROTADO!':'¡CALLE DESPEJADA! + VIDA',1300);
  }
- if(s.nextWaveAt&&time>s.nextWaveAt){s.nextWaveAt=0;if(wave>=WAVES_PER_LEVEL*LEVEL_COUNT){s.finishTriggered=true;end(true)}else addWave.call(s)}
+ if(s.nextWaveAt&&time>s.nextWaveAt){
+  s.nextWaveAt=0;
+  if(s.bossActive){s.finishTriggered=true;end(true)}
+  else if(wave%WAVES_PER_LEVEL===0){
+   const completedLevel=Math.ceil(wave/WAVES_PER_LEVEL);
+   showWelsonInterlude(s,completedLevel,()=>{
+    if(completedLevel===LEVEL_COUNT)spawnWelsonBoss(s);
+    else addWave.call(s);
+   });
+  }else addWave.call(s);
+ }
  if(time>p.comboExpire)$('#combo').classList.add('hidden');
  updateHud(p,s.enemies);
 }
 function end(win){
  if(state==='ended')return;
- state='ended';updateHiScore();audio(win?'win':'hurt');
+ state='ended';interludeContinue=null;$('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');updateHiScore();audio(win?'win':'hurt');
  $('#end').classList.remove('hidden');$('#end-eyebrow').textContent=win?'★ VICTORIA TOTAL ★':'GAME OVER';
  $('#end-title').textContent=win?'¡LOS MANGUACOS GANAN!':'¡TE SACARON LA CRESTA!';
  $('#end-detail').textContent=`${HEROES[selected].name} · ${String(score).padStart(6,'0')} PUNTOS · ${Math.ceil(wave/WAVES_PER_LEVEL)} ETAPAS · ${wave} OLEADAS`;
