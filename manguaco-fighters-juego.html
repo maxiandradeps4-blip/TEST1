@@ -7,6 +7,9 @@
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
   <title>MANGUACO FIGHTERS — Blondie 0.6.1 Mobile</title>
   <style>
+.level-picker{margin:7px 0 10px}.level-picker-title{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#fff;font-weight:900;font-size:16px;letter-spacing:1.4px;margin-bottom:6px}.level-picker-title small{font:700 9px 'Space Mono',monospace;letter-spacing:0;color:#bfb0d2}.level-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.level-option{display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:5px 10px;background:#201a31;border:2px solid #685872;color:#d3cadb;font-weight:900;font-size:16px;cursor:pointer;transition:background .12s,border-color .12s}.level-option span{color:var(--yellow);font:900 12px 'Space Mono',monospace}.level-option strong{white-space:nowrap}.level-option:hover{background:#402a4b}.level-option.active{border-color:var(--yellow);background:#63304f;color:#fff;box-shadow:inset 0 0 0 1px #ffe04a55}
+@media(max-width:620px){#menu{align-items:flex-start}#menu .menu-content{max-height:none;padding-bottom:25px}.level-picker{margin:2px 0 7px}.level-picker-title{font-size:13px}.level-picker-title small{font-size:7px}.level-options{gap:4px}.level-option{min-height:35px;padding:4px 5px;gap:4px;font-size:12px}.level-option span{font-size:10px}}
+@media(max-height:660px){.level-picker{margin:3px 0 5px}.level-option{min-height:33px}.level-picker-title{margin-bottom:3px}}
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
 #game-wrap{height:100dvh;width:100vw;position:relative;background:#141020;overflow:hidden;isolation:isolate}#game{position:absolute;inset:0}#game canvas{display:block;image-rendering:auto}
@@ -78,7 +81,15 @@
           <div class="roster" id="roster"></div>
           <div class="selected-info"><img id="selected-portrait" src="data:," alt="Retrato del personaje elegido"><div class="selected-text"><b id="hero-title">BARB</b><p id="hero-description">Velocidad, reflejos y combos.</p></div></div>
           <div class="stat-bars" id="stats"></div>
-          <button class="big-btn" id="play"><span>▶ INICIAR PARTIDA</span><small>1 JUGADOR</small></button>
+          <div class="level-picker" role="group" aria-label="Elegir etapa inicial">
+            <div class="level-picker-title">ELIGE LA ETAPA <small>DESDE AQUÍ COMIENZA TU PARTIDA</small></div>
+            <div class="level-options">
+              <button class="level-option active" type="button" data-level="1" aria-pressed="true"><span>01</span><strong>BLONDIE</strong></button>
+              <button class="level-option" type="button" data-level="2" aria-pressed="false"><span>02</span><strong>WHIP ME</strong></button>
+              <button class="level-option" type="button" data-level="3" aria-pressed="false"><span>03</span><strong>NIVEL 3</strong></button>
+            </div>
+          </div>
+          <button class="big-btn" id="play"><span>▶ INICIAR PARTIDA</span><small>ETAPA 01</small></button>
         </div>
       </div>
       <div class="bottomline"><span><kbd>←</kbd><kbd>→</kbd> ELEGIR &nbsp; <kbd>ENTER</kbd> JUGAR</span><span class="controls-hint">WASD MOVER · J GOLPEAR · K ESPECIAL · ESPACIO SALTAR</span></div>
@@ -180,7 +191,7 @@ const FOES=[
  {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
  {id:'fox-warrior',name:'GUERRERO ZORRO',hp:145,speed:76,damage:17,reach:65,size:.8,points:330},
 ];
-let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
+let game=null,stage=null,state='menu',selected=0,selectedLevel=1,score=0,wave=0,highScore=0,muted=false;
 const WAVES_PER_LEVEL=4, LEVEL_COUNT=3;
 let audioCtx=null;
 const inputTouch={left:false,right:false,up:false,down:false,moveX:0,moveY:0,attack:false,special:false,jump:false};
@@ -260,6 +271,16 @@ function select(i){
  $('#stats').innerHTML=[['VELOCIDAD',h.speed],['FUERZA',h.power],['VIDA',h.health]].map(([k,v])=>`<div class="stat"><span>${k}</span><span class="ticks">${Array.from({length:5},(_,j)=>`<i class="${j<v?'on':''}"></i>`).join('')}</span></div>`).join('');
  if(audioCtx)audio('select');
 }
+function selectLevel(level){
+ selectedLevel=clamp(Math.round(Number(level)||1),1,LEVEL_COUNT);
+ document.querySelectorAll('.level-option').forEach(btn=>{
+  const active=Number(btn.dataset.level)===selectedLevel;
+  btn.classList.toggle('active',active);
+  btn.setAttribute('aria-pressed',String(active));
+ });
+ $('#play').querySelector('small').textContent='ETAPA '+String(selectedLevel).padStart(2,'0');
+ if(audioCtx)audio('select');
+}
 function setupMenu(){
  try{highScore=Number(localStorage.getItem('manguacoHi')||'0')}catch(_){}
  const roster=$('#roster');roster.innerHTML='';
@@ -271,11 +292,13 @@ function setupMenu(){
  });
  $('#prev-hero').addEventListener('click',()=>select(selected-1));
  $('#next-hero').addEventListener('click',()=>select(selected+1));
+ document.querySelectorAll('.level-option').forEach(btn=>btn.addEventListener('click',()=>selectLevel(btn.dataset.level)));
  $('#play').onclick=()=>start();$('#retry').onclick=()=>start();$('#menu-btn').onclick=()=>toMenu();
  $('#mute').onclick=()=>{muted=!muted;$('#mute').textContent=muted?'SONIDO OFF':'SONIDO ON';$('#mute').setAttribute('aria-pressed',String(!muted))};
  document.addEventListener('keydown',e=>{
   if(state==='menu'){if(e.code==='ArrowLeft'||e.code==='KeyA'){select(selected-1);e.preventDefault()}
    if(e.code==='ArrowRight'||e.code==='KeyD'){select(selected+1);e.preventDefault()}
+   if(['Digit1','Digit2','Digit3','Numpad1','Numpad2','Numpad3'].includes(e.code)){selectLevel(Number(e.code.slice(-1)));e.preventDefault()}
    if(e.code==='Enter'){start();e.preventDefault()}}
   else if(state==='playing'&&e.code==='Escape'){togglePause()}
   else if(state==='paused'&&e.code==='Escape'){togglePause()}
@@ -289,7 +312,7 @@ function setupMenu(){
   btn.addEventListener('pointerdown',e=>{e.preventDefault();inputTouch[key]=true;btn.setPointerCapture(e.pointerId)}, {passive:false});
   for(const event of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(event,e=>{e.preventDefault();inputTouch[key]=false},{passive:false});
  }
- select(0);$('#menu-hiscore').textContent=String(highScore).padStart(6,'0');
+ select(0);selectLevel(1);$('#menu-hiscore').textContent=String(highScore).padStart(6,'0');
 }
 function toMenu(){
  state='menu';if(game){game.destroy(true);game=null}stage=null;
@@ -303,7 +326,7 @@ async function start(){
  if(!MF_READY){alert('No se pudieron cargar los personajes. Actualiza la página e inténtalo otra vez.');return;}
  if(!window.Phaser){alert('No se pudo cargar Phaser. Revisa la conexión y vuelve a intentar.');return}
  if(game){game.destroy(true);game=null;$('#game').replaceChildren()}
- state='loading';score=0;wave=0;clearTouchInput();
+ state='loading';score=0;wave=(selectedLevel-1)*WAVES_PER_LEVEL;clearTouchInput();
  $('#menu').classList.add('hidden');$('#end').classList.add('hidden');$('#pause').classList.add('hidden');
  $('#hud').classList.remove('hidden');$('#touch-controls').classList.remove('hidden');
  $('#hud-name').textContent=HEROES[selected].name;$('#hud-name').style.color=HEROES[selected].color;
@@ -701,8 +724,9 @@ function addWave(){
  }
  const level=Math.ceil(wave/WAVES_PER_LEVEL),localWave=((wave-1)%WAVES_PER_LEVEL)+1;
  $('#stage-index').textContent=String(level).padStart(2,'0');
+ $('#stage-name').textContent=['BLONDIE — NOCHE UNDERGROUND','WHIP ME — DISCOTECA','NIVEL 3 — NUEVO ESCENARIO'][level-1]||'MANGUACO FIGHTERS';
  $('#wave-text').textContent=`ETAPA ${level} · OLEADA ${localWave} / ${WAVES_PER_LEVEL}`;
- if(wave!==WAVES_PER_LEVEL+1)toast(wave===1?'¡A PELEAR!':`OLEADA ${localWave} — ¡VAMOS!`,1300);
+ if(localWave!==1||level===1)toast(wave===1?'¡A PELEAR!':`OLEADA ${localWave} — ¡VAMOS!`,1300);
 }
 function updateHud(p,enemies){
  $('#health-fill').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
