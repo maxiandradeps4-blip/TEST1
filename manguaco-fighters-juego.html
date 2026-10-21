@@ -594,7 +594,7 @@ function stageCreateSprite(s,key,x,y,scale){
  const texture=fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
   ?'street-punk-villain':(goth||newPunk)&&s.textures.exists('goth-villain')?'goth-villain':key;
  const sprite=s.add.sprite(x,y,texture,0).setOrigin(.5,.94).setDepth(y+4);
- sprite.setScale(hero?heroScaleFor(sprite,key):(goth||newPunk||fox)?scale*.92:scale*3.85);
+ sprite.setScale(hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
  return sprite;
 }
 function createStage(){
