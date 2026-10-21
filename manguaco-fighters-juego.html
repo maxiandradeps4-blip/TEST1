@@ -181,7 +181,7 @@ const FOES=[
  {id:'fox-warrior',name:'GUERRERO ZORRO',hp:145,speed:76,damage:17,reach:65,size:.8,points:330},
 ];
 let game=null,stage=null,state='menu',selected=0,score=0,wave=0,highScore=0,muted=false;
-const WAVES_PER_LEVEL=4, LEVEL_COUNT=2;
+const WAVES_PER_LEVEL=4, LEVEL_COUNT=3;
 let audioCtx=null;
 const inputTouch={left:false,right:false,up:false,down:false,moveX:0,moveY:0,attack:false,special:false,jump:false};
 let resetJoystick=null;
@@ -638,7 +638,7 @@ function enterSecondLevel(s){
  const key='whip-me-stage-background';
  const img=new Image();
  img.onload=()=>{
-   if(!s.sys.isActive()||wave<=WAVES_PER_LEVEL)return;
+   if(!s.sys.isActive()||wave<=WAVES_PER_LEVEL||wave>WAVES_PER_LEVEL*2)return;
    if(!s.textures.exists(key))s.textures.addImage(key,img);
    // Fill the stage without distorting the supplied pixel-art panorama.
    const tileWidth=img.naturalWidth*H/img.naturalHeight;
@@ -657,10 +657,40 @@ function enterSecondLevel(s){
  toast('ETAPA 2 — WHIP ME',2400);
 }
 
+function enterThirdLevel(s){
+ // ETAPA 3 — fondo nuevo aportado al repositorio.
+ (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
+ s.stageBackdrop=[];
+ const add=obj=>{s.stageBackdrop.push(obj);return obj};
+ add(s.add.rectangle(0,0,WORLD,H,0x10101d).setOrigin(0,0).setDepth(-250));
+ const bgPath='e3194510-5e46-4250-a383-953d5e925ad7.png';
+ const key='third-stage-background';
+ const img=new Image();
+ img.onload=()=>{
+   if(!s.sys.isActive()||wave<=WAVES_PER_LEVEL*2)return;
+   if(!s.textures.exists(key))s.textures.addImage(key,img);
+   const tileWidth=img.naturalWidth*H/img.naturalHeight;
+   if(!Number.isFinite(tileWidth)||tileWidth<=0)return;
+   for(let x=0;x<WORLD;x+=tileWidth){
+     add(s.add.image(x,0,key).setOrigin(0,0).setDisplaySize(tileWidth,H).setDepth(-240));
+   }
+ };
+ img.onerror=()=>console.error('No se pudo cargar el fondo de la etapa 3:',bgPath);
+ img.src=encodeURI(bgPath);
+ const blackout=add(s.add.rectangle(0,0,WORLD,H,0x05030b,.95).setOrigin(0,0).setDepth(900));
+ s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{
+   blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout);
+ }});
+ s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
+ s.player.energy=clamp(s.player.energy+30,0,100);
+ toast('ETAPA 3 — ¡A SEGUIR PELEANDO!',2400);
+}
+
 function addWave(){
  const s=this;wave++;s.waveSpawned=wave;
  if(wave===WAVES_PER_LEVEL+1)enterSecondLevel(s);
- const total=Math.min(3+wave*2,11);let available=WORLD-220-s.player.x;
+ if(wave===WAVES_PER_LEVEL*2+1)enterThirdLevel(s);
+ const total=Math.min(3+wave*2,wave>WAVES_PER_LEVEL*2?14:11);let available=WORLD-220-s.player.x;
  const start=clamp(s.player.x+370,200,WORLD-240);
  for(let i=0;i<total;i++){
   const tier=wave>WAVES_PER_LEVEL&&i%5===0?4:i%4===1?3:i%5===0?2:i%3===0?1:0;
