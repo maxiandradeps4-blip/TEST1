@@ -17,8 +17,8 @@
 .level-option .level-caption strong{font-size:14px;letter-spacing:.3px}
 .level-option.active .level-preview{filter:saturate(1.1) brightness(1.08)}
 @media(max-width:620px){.level-option .level-preview{height:37px}.level-option .level-caption{gap:4px;min-height:25px;padding:3px 2px}.level-option .level-caption strong{font-size:11px}}
-@media(max-width:440px){.level-options{grid-template-columns:repeat(2,minmax(0,1fr))}.level-option .level-preview{height:30px}}
 @media(max-height:660px){.level-option .level-preview{height:32px}.level-option .level-caption{min-height:23px;padding:2px}.level-option .level-caption strong{font-size:12px}}
+@media(max-width:440px){.level-options{grid-template-columns:repeat(2,minmax(0,1fr))}.level-option .level-preview{height:30px}}
 :root{--pink:#ff4a94;--yellow:#ffe04a;--ink:#0f0c19;--lav:#c9b9f6}
 *{box-sizing:border-box}html,body{height:100%;overscroll-behavior:none}body{margin:0;color:#fff;background:#080811;font-family:'Barlow Condensed',Impact,'Arial Narrow',sans-serif;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}button:active{transform:translateY(2px)}.hidden{display:none!important}
 #game-wrap{height:100dvh;width:100vw;position:relative;background:#141020;overflow:hidden;isolation:isolate}#game{position:absolute;inset:0}#game canvas{display:block;image-rendering:auto}
@@ -118,8 +118,8 @@
             <div class="level-options">
               <button class="level-option active" type="button" data-level="1" aria-pressed="true"><img class="level-preview" src="Rainy%20Neon%20Blondie%20Cityscape.png" alt="" loading="eager"><span class="level-caption"><span>01</span><strong>BLONDIE</strong></span></button>
               <button class="level-option" type="button" data-level="2" aria-pressed="false"><img class="level-preview" src="fondo-whipme.png" alt="" loading="eager"><span class="level-caption"><span>02</span><strong>WHIP ME</strong></span></button>
-              <button class="level-option" type="button" data-level="4" aria-pressed="false"><img class="level-preview" src="Santiago%20night%20highway%20pixel%20panorama.png" alt="" loading="eager"><span class="level-caption"><span>04</span><strong>FURIA LOCA</strong></span></button>
               <button class="level-option" type="button" data-level="3" aria-pressed="false"><img class="level-preview" src="e3194510-5e46-4250-a383-953d5e925ad7.png" alt="" loading="eager"><span class="level-caption"><span>03</span><strong>ALGARROBO</strong></span></button>
+              <button class="level-option" type="button" data-level="4" aria-pressed="false"><img class="level-preview" src="Santiago%20night%20highway%20pixel%20panorama.png" alt="" loading="eager"><span class="level-caption"><span>04</span><strong>FURIA LOCA</strong></span></button>
             </div>
           </div>
           <button class="big-btn" id="play"><span>▶ INICIAR PARTIDA</span><small>ETAPA 01</small></button>
@@ -327,6 +327,7 @@ function selectLevel(level){
  });
  $('#play').querySelector('small').textContent='ETAPA '+String(selectedLevel).padStart(2,'0');
  if(audioCtx)audio('select');
+}
 function setVehicleControls(active){
  const attack=$('#touch-controls .btn-attack');
  const special=$('#touch-controls .btn-special small');
@@ -336,7 +337,6 @@ function setVehicleControls(active){
  special.textContent=active?'TURBO':'PODER';
  evade.textContent=active?'DERRAPE':'SALTO';
  $('#hud-special').textContent=active?'FURIA LOCA · TURBO':HEROES[selected].special;
-}
 }
 function setupMenu(){
  try{highScore=Number(localStorage.getItem('manguacoHi')||'0')}catch(_){}
@@ -374,8 +374,8 @@ function setupMenu(){
  select(0);selectLevel(1);$('#menu-hiscore').textContent=String(highScore).padStart(6,'0');
 }
 function toMenu(){
- setVehicleControls(false);
  state='menu';interludeContinue=null;if(game){game.destroy(true);game=null}stage=null;
+ setVehicleControls(false);
  clearTouchInput();
  $('#menu').classList.remove('hidden');$('#end').classList.add('hidden');$('#pause').classList.add('hidden');
  $('#hud').classList.add('hidden');$('#touch-controls').classList.add('hidden');$('#toast').classList.add('hidden');
@@ -387,8 +387,8 @@ async function start(){
  if(!MF_READY){alert('No se pudieron cargar los personajes. Actualiza la página e inténtalo otra vez.');return;}
  if(!window.Phaser){alert('No se pudo cargar Phaser. Revisa la conexión y vuelve a intentar.');return}
  if(game){game.destroy(true);game=null;$('#game').replaceChildren()}
- setVehicleControls(false);
  state='loading';interludeContinue=null;score=0;wave=(selectedLevel-1)*WAVES_PER_LEVEL;clearTouchInput();
+ setVehicleControls(false);
  $('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');
  $('#menu').classList.add('hidden');$('#end').classList.add('hidden');$('#pause').classList.add('hidden');
  $('#hud').classList.remove('hidden');$('#touch-controls').classList.remove('hidden');
@@ -849,6 +849,7 @@ function enterThirdLevel(s){
  s.player.energy=clamp(s.player.energy+30,0,100);
  toast('ETAPA 3 — ALGARROBO',2400);
 }
+
 // ETAPA 4 — combate sobre ruedas. Conducimos la Furia Loca mientras el
 // panorama nocturno se desplaza y los autos góticos atacan desde la derecha.
 const TRAFFIC_LANES=[490,526,558];
@@ -1001,14 +1002,13 @@ function endDrivingLevel(s){
  $('#hud-name').textContent=HEROES[selected].name;
 }
 
-
 function addWave(){
+ const s=this;wave++;s.waveSpawned=wave;
  if(wave>(LEVEL_COUNT-1)*WAVES_PER_LEVEL){
   if(!s.driving)enterDrivingLevel(s);
   startTrafficWave(s);
   return;
  }
- const s=this;wave++;s.waveSpawned=wave;
  if(wave===WAVES_PER_LEVEL+1)enterSecondLevel(s);
  if(wave===WAVES_PER_LEVEL*2+1)enterThirdLevel(s);
  const total=Math.min(3+wave*2,wave>WAVES_PER_LEVEL*2?14:11);let available=WORLD-220-s.player.x;
@@ -1141,8 +1141,8 @@ function damagePlayer(s,e){
 }
 function getJumpHeight(p,now){if(now>=p.jumpUntil)return 0;const v=(now-p.jumpStarted)/(p.jumpUntil-p.jumpStarted);return Math.sin(clamp(v,0,1)*Math.PI)*77}
 function gameLoop(time,delta){
- if(s.driving){updateDriving.call(s,time,delta);return}
  if(state!=='playing')return;const s=this,p=s.player,k=s.keys,h=HEROES[selected];
+ if(s.driving){updateDriving.call(s,time,delta);return}
  let dt=Math.min(delta/1000,.036);if(time<s.slowUntil)dt*=.24;
  const left=k.left.isDown||k.a.isDown||inputTouch.left,right=k.right.isDown||k.d.isDown||inputTouch.right,
        up=k.up.isDown||k.w.isDown||inputTouch.up,down=k.down.isDown||k.ss.isDown||inputTouch.down;
