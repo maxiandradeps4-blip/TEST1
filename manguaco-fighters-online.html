@@ -1297,8 +1297,16 @@ function netJoinRoom(id){
  if(typeof Peer==='undefined'){netStatus('No se cargó la conexión online. Revisa internet.');return}
  netRole='guest';netStatus('Entrando a la sala del amigo...');netUpdateButtons();
  netPeer=new Peer();
- netPeer.on('open',()=>netAttachConnection(netPeer.connect(id,{reliable:true})));
+ netPeer.on('open',()=>{
+  netStatus('Sala encontrada. Intentando conexión directa...');
+  netAttachConnection(netPeer.connect(id,{reliable:true}));
+ });
  netPeer.on('error',error=>{netStatus('No se pudo conectar: '+error.type);console.warn('Manguaco PeerJS:',error)});
+ setTimeout(()=>{
+  if(netRole==='guest'&&(!netConnection||!netConnection.open)){
+   netStatus('No se completó la conexión. Prueba con otra red o un navegador actualizado.');
+  }
+ },18000);
 }
 function netAttachConnection(conn){
  netConnection=conn;
