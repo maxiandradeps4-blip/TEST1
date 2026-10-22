@@ -401,8 +401,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-   scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('welson-poses-source',encodeURI('welson poses.png')+'?v=20261021a');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3');this.load.image('furia-loca-car',encodeURI('Furia Loca turbo side-view SUV.png'));this.load.image('cyberpunk-car','61af02f6-9f30-42f9-b497-63e699d2293a.png');this.load.image('santiago-highway',encodeURI('Santiago night highway pixel panorama.png'))},
-    create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-poses-source'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='ARCADE V0.7 · FURIA LOCA';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+   scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('welson-poses-source',encodeURI('welson poses.png')+'?v=20261021a');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3');this.load.image('furia-loca-car',encodeURI('Furia Loca turbo side-view SUV.png'));this.load.image('cyberpunk-car','61af02f6-9f30-42f9-b497-63e699d2293a.png');this.load.image('santiago-highway',encodeURI('Santiago night highway pixel panorama.png'));this.load.image('bunny-source',encodeURI('16-bit Bunny Battery Hero.png')+'?v=20261022')},
+    create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-poses-source'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);if(this.textures.exists('bunny-source'))buildBunnyAssets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='ARCADE V0.7 · FURIA LOCA';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -739,7 +739,7 @@ function createStage(){
  const p=s.player;
  p.shadow=s.add.ellipse(p.x,p.y,77,15,0x06040c,.45).setDepth(p.y-1);
  p.sprite=stageCreateSprite(s,h.id,p.x,p.y,1.07);
- s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.bossActive=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
+ s.bunnySupport=null;s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.bossActive=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
  s.cameras.main.startFollow(p.sprite,true,.095,.15,0,50);
  s.cameras.main.setDeadzone(300,160);
  s.cameras.main.setZoom(1);
@@ -792,6 +792,150 @@ function spawnFoe(s,x,y,tier){
  return foe;
 }
 
+
+// CONEJO DURACELL — visita de apoyo cada 20 segundos solo en Whip Me y Algarrobo.
+const BUNNY_INTERVAL_MS=20000;
+const BUNNY_BATTERY_FLIGHT_MS=750;
+const BUNNY_PICKUP_MS=12000;
+function buildBunnyAssets(scene){
+ const src=scene.textures.get('bunny-source').getSourceImage();
+ const w=src.width,h=src.height,canvas=document.createElement('canvas');
+ canvas.width=w;canvas.height=h;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(src,0,0);
+ const image=ctx.getImageData(0,0,w,h),pixels=image.data;
+ // Quita solo el fondo exterior conectado a los bordes; conserva los detalles interiores.
+ const bg=[pixels[0],pixels[1],pixels[2]];
+ const marked=new Uint8Array(w*h),queue=new Int32Array(w*h);
+ let head=0,tail=0;
+ function mark(i){
+  if(marked[i])return;
+  const j=i*4;
+  if(pixels[j+3]<8){marked[i]=1;queue[tail++]=i;return}
+  if(pixels[j]<175||Math.abs(pixels[j]-bg[0])>30||Math.abs(pixels[j+1]-bg[1])>30||Math.abs(pixels[j+2]-bg[2])>30)return;
+  marked[i]=1;queue[tail++]=i;
+ }
+ for(let x=0;x<w;x++){mark(x);mark((h-1)*w+x)}
+ for(let y=0;y<h;y++){mark(y*w);mark(y*w+w-1)}
+ while(head<tail){
+  const i=queue[head++],x=i%w;
+  if(x>0)mark(i-1);
+  if(x<w-1)mark(i+1);
+  if(i>=w)mark(i-w);
+  if(i<w*(h-1))mark(i+w);
+ }
+ let minX=w,minY=h,maxX=0,maxY=0;
+ for(let i=0;i<w*h;i++){
+  if(marked[i])pixels[i*4+3]=0;
+  if(pixels[i*4+3]<20)continue;
+  const x=i%w,y=Math.floor(i/w);
+  if(x<minX)minX=x;if(x>maxX)maxX=x;
+  if(y<minY)minY=y;if(y>maxY)maxY=y;
+ }
+ if(minX>maxX||minY>maxY)return;
+ ctx.putImageData(image,0,0);
+ minX=Math.max(0,minX-3);minY=Math.max(0,minY-3);
+ maxX=Math.min(w-1,maxX+3);maxY=Math.min(h-1,maxY+3);
+ const bunny=document.createElement('canvas');
+ bunny.width=maxX-minX+1;bunny.height=maxY-minY+1;
+ bunny.getContext('2d').drawImage(canvas,minX,minY,bunny.width,bunny.height,0,0,bunny.width,bunny.height);
+ scene.textures.addCanvas('bunny-support',bunny);
+ // La pila se recorta de la ilustración original para que conserve su estilo pixel art.
+ const bx=Math.round(w*.267),by=Math.round(h*.012);
+ const bw=Math.round(w*.158),bh=Math.round(h*.393);
+ const battery=document.createElement('canvas');
+ battery.width=bw;battery.height=bh;
+ battery.getContext('2d').drawImage(canvas,bx,by,bw,bh,0,0,bw,bh);
+ scene.textures.addCanvas('bunny-battery',battery);
+}
+function clearBunnySupport(s){
+ if(!s||!s.bunnySupport)return;
+ const support=s.bunnySupport;
+ s.bunnySupport=null;
+ if(support.actor){
+  s.tweens.killTweensOf(support.actor);
+  support.actor.destroy();
+ }
+ for(const item of support.pickups){
+  if(item.sprite)item.sprite.destroy();
+  if(item.shadow)item.shadow.destroy();
+ }
+}
+function resetBunnySupport(s,level){
+ clearBunnySupport(s);
+ if(level!==2&&level!==3)return;
+ s.bunnySupport={level,nextAt:s.time.now+BUNNY_INTERVAL_MS,visits:0,actor:null,pickups:[]};
+}
+function sendBunnyBattery(s,support,bunny){
+ if(s.bunnySupport!==support||!bunny.active||!s.textures.exists('bunny-battery'))return;
+ const p=s.player;
+ const tx=clamp(p.x+rand(-24,24),45,WORLD-45);
+ const ty=clamp(p.y+rand(-11,11),MIN_Y,MAX_Y);
+ const startX=bunny.x+(bunny.flipX?34:-34),startY=bunny.y-115;
+ const sprite=s.add.image(startX,startY,'bunny-battery').setOrigin(.5,.8).setScale(.125).setDepth(1200);
+ const shadow=s.add.ellipse(tx,ty,38,10,0xffe47a,.38).setDepth(ty-2);
+ support.pickups.push({sprite,shadow,fromX:startX,fromY:startY,x:tx,groundY:ty,
+  startedAt:s.time.now,flying:true,expiresAt:0});
+ spark(s,startX,startY,0xffd45a,9,38);
+}
+function spawnBunnySupport(s){
+ const support=s.bunnySupport;
+ if(!support||support.actor||!s.textures.exists('bunny-support'))return;
+ const cam=s.cameras.main,p=s.player;
+ const side=support.visits++%2===0?1:-1;
+ const outside=side>0?cam.scrollX+W+90:cam.scrollX-90;
+ const stopX=clamp(p.x+side*225,cam.scrollX+100,cam.scrollX+W-100);
+ const y=clamp(p.y+14,MIN_Y,MAX_Y);
+ const bunny=s.add.image(outside,y,'bunny-support').setOrigin(.5,1).setDepth(y+10);
+ bunny.setScale(178/bunny.height).setFlipX(side>0);
+ support.actor=bunny;
+ s.tweens.add({targets:bunny,x:stopX,duration:850,ease:'Quad.easeOut',
+  onComplete:()=>{
+   if(s.bunnySupport!==support||!bunny.active)return;
+   if(state==='playing')sendBunnyBattery(s,support,bunny);
+   s.time.delayedCall(450,()=>{
+    if(s.bunnySupport!==support||!bunny.active)return;
+    const exit=side>0?s.cameras.main.scrollX+W+95:s.cameras.main.scrollX-95;
+    s.tweens.add({targets:bunny,x:exit,alpha:0,duration:850,ease:'Quad.easeIn',
+     onComplete:()=>{if(support.actor===bunny)support.actor=null;bunny.destroy()}});
+   });
+  }});
+}
+function updateBunnySupport(s,time){
+ const support=s.bunnySupport;
+ if(!support||Math.ceil(wave/WAVES_PER_LEVEL)!==support.level)return;
+ if(time>=support.nextAt){
+  support.nextAt=time+BUNNY_INTERVAL_MS;
+  spawnBunnySupport(s);
+ }
+ for(let i=support.pickups.length-1;i>=0;i--){
+  const item=support.pickups[i];
+  if(item.flying){
+   const t=clamp((time-item.startedAt)/BUNNY_BATTERY_FLIGHT_MS,0,1);
+   item.sprite.x=item.fromX+(item.x-item.fromX)*t;
+   item.sprite.y=item.fromY+(item.groundY-29-item.fromY)*t-Math.sin(t*Math.PI)*82;
+   item.sprite.angle=t*520;
+   if(t>=1){item.flying=false;item.expiresAt=time+BUNNY_PICKUP_MS;item.sprite.angle=0}
+  }else{
+   item.sprite.y=item.groundY-28+Math.sin(time/170)*5;
+   item.sprite.angle=Math.sin(time/260)*8;
+   const p=s.player;
+   if(Math.abs(p.x-item.x)<58&&Math.abs(p.y-item.groundY)<49){
+    const amount=Math.min(p.maxHp-p.hp,Math.round(p.maxHp*.35));
+    p.hp+=amount;
+    spark(s,item.x,item.groundY-38,0xffeb55,17,65);
+    toast(amount>0?'⚡ PILA DURACELL · +'+amount+' VIDA':'⚡ ¡VIDA AL MÁXIMO!',1400);
+    audio('power');
+    item.sprite.destroy();item.shadow.destroy();support.pickups.splice(i,1);
+    continue;
+   }
+  }
+  if(item.expiresAt&&time>=item.expiresAt){
+   item.sprite.destroy();item.shadow.destroy();support.pickups.splice(i,1);
+  }
+ }
+}
+
 function enterSecondLevel(s){
  // WHIP ME — stage two. Preserve the fighter, score, and gameplay.
  (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
@@ -816,6 +960,7 @@ function enterSecondLevel(s){
  s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{
    blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout);
  }});
+ resetBunnySupport(s,2);
  s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
  s.player.energy=clamp(s.player.energy+30,0,100);
  toast('ETAPA 2 — WHIP ME',2400);
@@ -845,6 +990,7 @@ function enterThirdLevel(s){
  s.tweens.add({targets:blackout,alpha:0,duration:1250,onComplete:()=>{
    blackout.destroy();s.stageBackdrop=s.stageBackdrop.filter(o=>o!==blackout);
  }});
+ resetBunnySupport(s,3);
  s.player.hp=clamp(s.player.hp+38,0,s.player.maxHp);
  s.player.energy=clamp(s.player.energy+30,0,100);
  toast('ETAPA 3 — ALGARROBO',2400);
@@ -854,6 +1000,7 @@ function enterThirdLevel(s){
 // panorama nocturno se desplaza y los autos góticos aceleran desde atrás, hacia la derecha.
 const TRAFFIC_LANES=[490,526,558];
 function enterDrivingLevel(s){
+ clearBunnySupport(s);
  (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
  s.stageBackdrop=[];
  s.cameras.main.stopFollow();s.cameras.main.setScroll(0,0);
@@ -1184,6 +1331,7 @@ function gameLoop(time,delta){
  const heroScale=heroScaleFor(p.sprite,h.id);p.sprite.setScale(heroScale*squashX,heroScale*squashY).setAngle(rotation);
  p.shadow.setPosition(p.x,p.y+5).setDepth(Math.floor(p.y)-2).setScale(1-jumping/220,.75-jumping/400);
  if(time<p.invUntil)p.sprite.setAlpha(Math.floor(time/75)%2?.48:1);else p.sprite.setAlpha(1);
+ updateBunnySupport(s,time);
  // Enemy behaviour: pursue, telegraph a hit, avoid bunching together, then recover.
  for(let i=0;i<s.enemies.length;i++){
   const e=s.enemies[i];if(!e.alive)continue;
@@ -1233,7 +1381,7 @@ function gameLoop(time,delta){
 }
 function end(win){
  if(state==='ended')return;
- state='ended';interludeContinue=null;$('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');updateHiScore();audio(win?'win':'hurt');
+ state='ended';clearBunnySupport(stage);interludeContinue=null;$('#welson-interlude').classList.add('hidden');$('#boss-hud').classList.add('hidden');updateHiScore();audio(win?'win':'hurt');
  $('#end').classList.remove('hidden');$('#end-eyebrow').textContent=win?'★ VICTORIA TOTAL ★':'GAME OVER';
  $('#end-title').textContent=win?'¡LOS MANGUACOS GANAN!':'¡TE SACARON LA CRESTA!';
  $('#end-detail').textContent=`${HEROES[selected].name} · ${String(score).padStart(6,'0')} PUNTOS · ${Math.ceil(wave/WAVES_PER_LEVEL)} ETAPAS · ${wave} OLEADAS`;
