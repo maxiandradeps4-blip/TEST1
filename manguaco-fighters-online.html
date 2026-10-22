@@ -109,6 +109,19 @@
 #coop-health-fill{height:100%;width:100%;background:linear-gradient(90deg,#e94084,#ffa4cf);transition:width .15s}
 #coop-name{font:900 13px monospace;letter-spacing:1.5px}
 @media(max-width:700px){#online-panel{gap:5px;margin:2px auto 7px;padding:5px 7px}#online-panel button{padding:7px;font-size:10px}#net-status{font-size:10px;min-width:115px}#coop-hud{top:66px;left:7px;width:36vw;padding:5px}#coop-name{font-size:9px}}
+
+/* Selector de modos compartido entre el arcade clásico y el cooperativo online. */
+.mode-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;width:min(1110px,100%);margin:0 auto 10px}
+.mode-entry{display:flex;justify-content:center;align-items:center;gap:14px;min-width:0;min-height:42px;padding:6px 10px;color:#ece6f5;background:#21192e;border:2px solid #675579;text-decoration:none;box-shadow:4px 4px 0 #090711;transition:background .12s,border-color .12s}
+.mode-entry strong{font-size:19px;line-height:1.05;font-weight:900;letter-spacing:1px}
+.mode-entry small{font:700 9px/1.25 'Space Mono',monospace;letter-spacing:.4px;color:#c9bbda}
+.mode-entry.current{background:#503047;border-color:var(--yellow)}
+.mode-entry.current strong{color:var(--yellow)}
+.mode-entry:not(.current):hover{background:#532748;border-color:var(--pink);color:#fff}
+.mode-entry:not(.current):hover strong{color:#ff84bc}
+.mode-entry:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@media(max-width:620px){.mode-switch{gap:5px;margin:0 auto 8px}.mode-entry{flex-direction:column;gap:2px;min-height:40px;padding:5px 4px;text-align:center}.mode-entry strong{font-size:14px;letter-spacing:.2px}.mode-entry small{font-size:8px}}
+@media(max-height:660px){.mode-switch{margin-bottom:5px}.mode-entry{min-height:32px;padding:4px 7px}.mode-entry strong{font-size:15px}.mode-entry small{font-size:8px}}
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
   <script defer src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
@@ -123,6 +136,10 @@
       <div class="topline"><span class="edition">✦ ARCADE EDITION <b>ONLINE · BETA</b></span><span class="best-score">HI-SCORE <b id="menu-hiscore">000000</b></span></div>
       <div class="logo-stack"><div class="logo-kicker">GRUPO DE AMIGOS DEL POTO PRESENTA</div><h1 id="logo">MANGUACO <em>FIGHTERS</em></h1><p class="sub">SEIS AMIGOS. UNA CIUDAD. UN COMBATE ÉPICO.</p></div>
       <div id="online-panel"><button id="net-create" type="button">CREAR SALA</button><button id="net-copy" type="button" hidden>COPIAR INVITACIÓN</button><input id="net-link" aria-label="Enlace de invitación" type="text" readonly hidden><span id="net-status" role="status">Preparando modo online...</span></div>
+      <nav class="mode-switch" aria-label="Elegir modo de juego">
+        <a class="mode-entry" href="manguaco-fighters-juego.html"><strong>1 JUGADOR</strong><small>ARCADE CLÁSICO</small></a>
+        <div class="mode-entry current" aria-current="page"><strong>2 JUGADORES ONLINE</strong><small>COOPERATIVO · BETA</small></div>
+      </nav>
       <div class="menu-stage">
         <div class="hero-spotlight" id="selected-art-wrap" aria-hidden="true"><div class="glow-disc"></div><div class="light-floor"></div><img id="selected-art" src="data:," alt=""><div class="spotlight-no">01 <span>PLAYER SELECT</span></div></div>
         <div class="choose-panel">
