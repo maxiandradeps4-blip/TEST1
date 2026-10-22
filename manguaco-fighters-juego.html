@@ -107,6 +107,12 @@
 .mode-entry:focus-visible{outline:3px solid #fff;outline-offset:4px}
 @media(max-width:620px){.mode-switch{gap:5px;margin:0 auto 8px}.mode-entry{flex-direction:column;gap:2px;min-height:40px;padding:5px 4px;text-align:center}.mode-entry strong{font-size:14px;letter-spacing:.2px}.mode-entry small{font-size:8px}}
 @media(max-height:660px){.mode-switch{margin-bottom:5px}.mode-entry{min-height:32px;padding:4px 7px}.mode-entry strong{font-size:15px}.mode-entry small{font-size:8px}}
+
+/* El selector agrega altura al menú: dejar que el panel crezca y se desplace sin tapar el botón de jugar. */
+#menu .menu-content{overflow-x:hidden;overflow-y:auto;scrollbar-width:thin}
+#menu .menu-stage{height:auto;min-height:clamp(310px,52dvh,510px)}
+#menu .bottomline{margin-top:12px}
+@media(max-width:620px){#menu .menu-content{overflow:visible}#menu .menu-stage{min-height:0}}
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
   
