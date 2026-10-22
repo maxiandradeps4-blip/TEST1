@@ -98,6 +98,8 @@
 #online-panel{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:6px auto 12px;padding:11px 14px;width:min(660px,95%);background:#130b28df;border:1px solid #ff67a388;border-radius:12px;color:#fff;box-shadow:0 4px 24px #0006}
 #online-panel button{cursor:pointer;border:0;border-radius:7px;background:#ff5d9c;color:#170d25;font-weight:900;font-size:12px;letter-spacing:.5px;padding:9px 12px}
 #online-panel button#net-copy{background:#eecb74}
+#net-link{width:min(390px,100%);background:#261338;border:1px solid #735476;color:#ffe7f5;font:11px monospace;padding:8px;border-radius:7px}
+#net-link[hidden]{display:none}
 #online-panel button[hidden]{display:none}
 #net-status{font:12px/1.4 monospace;flex:1;min-width:185px;color:#f7e7ff;text-align:left}
 #play:disabled{opacity:.55;cursor:not-allowed}
@@ -120,7 +122,7 @@
     <div class="menu-content">
       <div class="topline"><span class="edition">✦ ARCADE EDITION <b>ONLINE · BETA</b></span><span class="best-score">HI-SCORE <b id="menu-hiscore">000000</b></span></div>
       <div class="logo-stack"><div class="logo-kicker">GRUPO DE AMIGOS DEL POTO PRESENTA</div><h1 id="logo">MANGUACO <em>FIGHTERS</em></h1><p class="sub">SEIS AMIGOS. UNA CIUDAD. UN COMBATE ÉPICO.</p></div>
-      <div id="online-panel"><button id="net-create" type="button">CREAR SALA</button><button id="net-copy" type="button" hidden>COPIAR INVITACIÓN</button><span id="net-status" role="status">Preparando modo online...</span></div>
+      <div id="online-panel"><button id="net-create" type="button">CREAR SALA</button><button id="net-copy" type="button" hidden>COPIAR INVITACIÓN</button><input id="net-link" aria-label="Enlace de invitación" type="text" readonly hidden><span id="net-status" role="status">Preparando modo online...</span></div>
       <div class="menu-stage">
         <div class="hero-spotlight" id="selected-art-wrap" aria-hidden="true"><div class="glow-disc"></div><div class="light-floor"></div><img id="selected-art" src="data:," alt=""><div class="spotlight-no">01 <span>PLAYER SELECT</span></div></div>
         <div class="choose-panel">
@@ -1270,6 +1272,7 @@ function netSend(data){try{if(netConnection&&netConnection.open)netConnection.se
 function netUpdateButtons(){
  const create=document.getElementById('net-create'),copy=document.getElementById('net-copy'),play=document.getElementById('play');
  create.hidden=netRole!=='idle';copy.hidden=netRole!=='host'||!netRoomURL;
+ document.getElementById('net-link').hidden=netRole!=='host'||!netRoomURL;
  const paired=!!netConnection&&netConnection.open;
  play.disabled=netRole!=='host'||!paired;
  play.querySelector('span').textContent=netRole==='guest'?'ESPERANDO AL ANFITRIÓN':paired?'▶ INICIAR COOPERATIVO':'▶ PRIMERO CONECTA A UN AMIGO';
@@ -1280,7 +1283,8 @@ function netCreateRoom(){
  netPeer=new Peer();
  netPeer.on('open',id=>{
   const url=new URL(location.href);url.searchParams.set('join',id);
-  netRoomURL=url.toString();netStatus('Sala creada. Comparte el enlace y espera al segundo jugador.');
+  netRoomURL=url.toString();document.getElementById('net-link').value=netRoomURL;
+  netStatus('Sala creada. Comparte el enlace y espera al segundo jugador.');
   netUpdateButtons();
  });
  netPeer.on('connection',conn=>{
