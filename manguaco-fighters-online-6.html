@@ -1765,7 +1765,7 @@ select=function(index){
  if(netGameStarted&&!netSilentSelect)return;
  const desired=(index+6)%6;
  const ownSlot=netRole==='guest'?netMySlot:0;
- if(!netSilentSelect&&netRole!=='idle'&&netHeroTaken(desired,ownSlot)){
+ if(!netSilentSelect&&netRole!=='idle'&&ownSlot>=0&&netHeroTaken(desired,ownSlot)){
   netStatus(HEROES[desired].name+' ya está elegido. Escoge otro Duendecillo.');return;
  }
  _sixOldSelect(index);
