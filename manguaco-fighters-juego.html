@@ -7,7 +7,7 @@
   <meta name="description" content="Manguaco Fighters, un beat 'em up arcade de seis amigos que defienden las calles de Santiago.">
   <title>MANGUACO FIGHTERS — WELSON FINAL BOSS</title>
   <style>
-.level-picker{margin:7px 0 10px}.level-picker-title{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#fff;font-weight:900;font-size:16px;letter-spacing:1.4px;margin-bottom:6px}.level-picker-title small{font:700 9px 'Space Mono',monospace;letter-spacing:0;color:#bfb0d2}.level-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.level-option{display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:5px 10px;background:#201a31;border:2px solid #685872;color:#d3cadb;font-weight:900;font-size:16px;cursor:pointer;transition:background .12s,border-color .12s}.level-option span{color:var(--yellow);font:900 12px 'Space Mono',monospace}.level-option strong{white-space:nowrap}.level-option:hover{background:#402a4b}.level-option.active{border-color:var(--yellow);background:#63304f;color:#fff;box-shadow:inset 0 0 0 1px #ffe04a55}
+.level-picker{margin:7px 0 10px}.level-picker-title{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#fff;font-weight:900;font-size:16px;letter-spacing:1.4px;margin-bottom:6px}.level-picker-title small{font:700 9px 'Space Mono',monospace;letter-spacing:0;color:#bfb0d2}.level-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.level-option{display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:5px 10px;background:#201a31;border:2px solid #685872;color:#d3cadb;font-weight:900;font-size:16px;cursor:pointer;transition:background .12s,border-color .12s}.level-option span{color:var(--yellow);font:900 12px 'Space Mono',monospace}.level-option strong{white-space:nowrap}.level-option:hover{background:#402a4b}.level-option.active{border-color:var(--yellow);background:#63304f;color:#fff;box-shadow:inset 0 0 0 1px #ffe04a55}
 @media(max-width:620px){#menu{align-items:flex-start}#menu .menu-content{max-height:none;padding-bottom:25px}.level-picker{margin:2px 0 7px}.level-picker-title{font-size:13px}.level-picker-title small{font-size:7px}.level-options{gap:4px}.level-option{min-height:35px;padding:4px 5px;gap:4px;font-size:12px}.level-option span{font-size:10px}}
 @media(max-height:660px){.level-picker{margin:3px 0 5px}.level-option{min-height:33px}.level-picker-title{margin-bottom:3px}}
 /* Miniaturas de los escenarios: el nombre sigue visible bajo cada fondo. */
@@ -143,6 +143,7 @@
               <button class="level-option" type="button" data-level="2" aria-pressed="false"><img class="level-preview" src="fondo-whipme.png" alt="" loading="eager"><span class="level-caption"><span>02</span><strong>WHIP ME</strong></span></button>
               <button class="level-option" type="button" data-level="3" aria-pressed="false"><img class="level-preview" src="e3194510-5e46-4250-a383-953d5e925ad7.png" alt="" loading="eager"><span class="level-caption"><span>03</span><strong>ALGARROBO</strong></span></button>
               <button class="level-option" type="button" data-level="4" aria-pressed="false"><img class="level-preview" src="Santiago%20night%20highway%20pixel%20panorama.png" alt="" loading="eager"><span class="level-caption"><span>04</span><strong>FURIA LOCA</strong></span></button>
+              <button class="level-option" type="button" data-level="5" aria-pressed="false"><img class="level-preview" src="WhatsApp%20Image%202026-10-23%20at%2011.31.45.jpeg" alt="" loading="eager"><span class="level-caption"><span>05</span><strong>TU POTO</strong></span></button>
             </div>
           </div>
           <button class="big-btn" id="play"><span>▶ INICIAR PARTIDA</span><small>ETAPA 01</small></button>
@@ -156,7 +157,7 @@
     <div class="stage-hud"><b>STAGE <span id="stage-index">01</span></b><span id="stage-name">BLONDIE — NOCHE UNDERGROUND</span></div>
     <div class="enemy-hud"><button id="mute" aria-pressed="true">SONIDO ON</button><button id="pause-btn">Ⅱ PAUSA</button><div class="foe-label">ENEMIGOS <strong id="enemy-counter">00</strong></div><span id="wave-text">OLEADA 1 / 4</span></div>
   </section>
-  <div id="boss-hud" class="hidden" aria-label="Vida de Welson"><b>★ WELSON — JEFE FINAL ★</b><div class="boss-life"><div id="boss-health-fill"></div></div></div>
+  <div id="boss-hud" class="hidden" aria-label="Vida del jefe"><b id="boss-name">★ WELSON — JEFE FINAL ★</b><div class="boss-life"><div id="boss-health-fill"></div></div></div>
   <div id="combo" class="combo hidden" aria-live="polite">3 HITS</div>
   <div id="toast" class="toast hidden" aria-live="polite"></div>
   <section id="load-screen" class="overlay load hidden"><div><span>PREPARANDO LA BATALLA</span><div class="load-bar"><div id="load-fill"></div></div><small>CARGANDO PERSONAJES Y ANIMACIONES...</small></div></section>
@@ -260,9 +261,10 @@ const FOES=[
  {id:'street-punk',name:'ENEMIGO PUNK',hp:115,speed:69,damage:12,reach:65,size:.73,points:230},
  {id:'fox-warrior',name:'GUERRERO ZORRO',hp:145,speed:76,damage:17,reach:65,size:.8,points:330},
  {id:'welson',name:'WELSON',hp:800,speed:77,damage:23,reach:90,size:2,points:5000},
+ {id:'mowak',name:'MOWAK',hp:650,speed:72,damage:20,reach:82,size:1.55,points:4000},
 ];
 let game=null,stage=null,state='menu',selected=0,selectedLevel=1,score=0,wave=0,highScore=0,muted=false,interludeContinue=null;
- const WAVES_PER_LEVEL=4, LEVEL_COUNT=4;
+ const WAVES_PER_LEVEL=4, LEVEL_COUNT=5;
 let audioCtx=null;
 const inputTouch={left:false,right:false,up:false,down:false,moveX:0,moveY:0,attack:false,special:false,jump:false};
 let resetJoystick=null;
@@ -378,7 +380,7 @@ function setupMenu(){
  document.addEventListener('keydown',e=>{
   if(state==='menu'){if(e.code==='ArrowLeft'||e.code==='KeyA'){select(selected-1);e.preventDefault()}
    if(e.code==='ArrowRight'||e.code==='KeyD'){select(selected+1);e.preventDefault()}
-    if(['Digit1','Digit2','Digit3','Digit4','Numpad1','Numpad2','Numpad3','Numpad4'].includes(e.code)){selectLevel(Number(e.code.slice(-1)));e.preventDefault()}
+    if(['Digit1','Digit2','Digit3','Digit4','Digit5','Numpad1','Numpad2','Numpad3','Numpad4','Numpad5'].includes(e.code)){selectLevel(Number(e.code.slice(-1)));e.preventDefault()}
    if(e.code==='Enter'){start();e.preventDefault()}}
   else if(state==='interlude'&&(e.code==='Enter'||e.code==='Space')){e.preventDefault();if(!e.repeat)continueWelson()}
   else if(state==='playing'&&e.code==='Escape'){togglePause()}
@@ -424,8 +426,8 @@ async function start(){
   backgroundColor:'#16162a',pixelArt:true,roundPixels:true,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:false,powerPreference:'high-performance'},
-   scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('welson-poses-source',encodeURI('welson poses.png')+'?v=20261021a');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3');this.load.image('furia-loca-car',encodeURI('Furia Loca turbo side-view SUV.png'));this.load.image('cyberpunk-car','61af02f6-9f30-42f9-b497-63e699d2293a.png');this.load.image('santiago-highway',encodeURI('Santiago night highway pixel panorama.png'));this.load.image('bunny-source',encodeURI('16-bit Bunny Battery Hero.png')+'?v=20261022')},
-    create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-poses-source'))buildWelsonSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);if(this.textures.exists('bunny-source'))buildBunnyAssets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='ARCADE V0.7 · FURIA LOCA';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
+   scene:{preload(){this.load.image('welson-original','welson-villano.png');this.load.image('welson-poses-source',encodeURI('welson poses.png')+'?v=20261021a');this.load.image('fox-warrior-source',encodeURI('Hojas de sprites de guerrero zorro pixelado.png'));this.load.image('street-punk-source',encodeURI('Punk Brawler Sprite Sheet.png')+'?v=red-jacket-fat-v1');this.load.image('hero-source',encodeURI('Pixel Art Beat-’Em-Up Character Sprite Sheet.png')+'?heroes=20261016b');this.load.image('villain-source',encodeURI('Gothic Punk Enemy Sprite Sheet.png')+'?sprites=hooded-mask-v3');this.load.image('furia-loca-car',encodeURI('Furia Loca turbo side-view SUV.png'));this.load.image('cyberpunk-car','61af02f6-9f30-42f9-b497-63e699d2293a.png');this.load.image('santiago-highway',encodeURI('Santiago night highway pixel panorama.png'));this.load.image('bunny-source',encodeURI('16-bit Bunny Battery Hero.png')+'?v=20261022');this.load.image('mowak-source','71d380cb-31ef-4af8-be56-89f406812d44.png');this.load.image('tu-poto-background',encodeURI('WhatsApp Image 2026-10-23 at 11.31.45.jpeg'))},
+    create(){stage=this;for(const id of FOES.map(x=>x.id).filter(id=>MF_SHEETS[id]))this.textures.addSpriteSheet(id,MF_SHEETS[id],{frameWidth:MF_W,frameHeight:MF_H});if(this.textures.exists('villain-source'))buildVillainSheets(this);if(this.textures.exists('street-punk-source'))buildStreetPunkSheets(this);if(this.textures.exists('fox-warrior-source'))buildFoxWarriorSheets(this);if(this.textures.exists('welson-poses-source'))buildWelsonSheets(this);if(this.textures.exists('mowak-source'))buildMowakSheets(this);if(!this.textures.exists('hero-source')){throw new Error('No se pudo cargar el PNG de los protagonistas')}buildHeroSheets(this);if(this.textures.exists('bunny-source'))buildBunnyAssets(this);createStage.call(this);$('#load-screen').classList.add('hidden');const versionTag=document.createElement('div');versionTag.textContent='ARCADE V0.7 · FURIA LOCA';versionTag.style.cssText='position:fixed;right:10px;bottom:10px;z-index:99999;background:#171126dd;color:#fff;font:11px monospace;padding:5px 8px;pointer-events:none;border:1px solid #6d5b9e';document.body.appendChild(versionTag);state='playing'},
    update(time,delta){gameLoop.call(this,time,delta)}}
  });
 }
@@ -740,15 +742,90 @@ function buildWelsonSheets(scene){
  scene.textures.addSpriteSheet('welson-villain',sheet,{frameWidth:FW,frameHeight:FH});
 }
 
+// Atlas de MOWAK: ocho poses en cuadrícula 4 × 2, con fondo degradado.
+function buildMowakSheets(scene){
+  const source=scene.textures.get('mowak-source').getSourceImage();
+  const canvas=document.createElement('canvas');
+  canvas.width=source.width;canvas.height=source.height;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(source,0,0);
+  const full=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  // El fondo varía de rojo-violeta a marrón según la altura.
+  // Estimarlo en las separaciones de los cuatro cuadros protege la pintura facial blanca.
+  const bgRows=[];
+  const columns=[0,Math.floor(canvas.width/4),Math.floor(canvas.width/2),
+    Math.floor(canvas.width*3/4),canvas.width-1];
+  for(let y=0;y<canvas.height;y++){
+    const samples=columns.map(x=>{
+      const i=(y*canvas.width+x)*4;return [full[i],full[i+1],full[i+2]];
+    });
+    bgRows.push([0,1,2].map(k=>samples.map(s=>s[k]).sort((a,b)=>a-b)[2]));
+  }
+  const crops=[];
+  for(let index=0;index<8;index++){
+    const col=index%4,row=Math.floor(index/4);
+    const x=Math.floor(col*canvas.width/4),y=Math.floor(row*canvas.height/2);
+    const w=Math.floor((col+1)*canvas.width/4)-x;
+    const h=Math.floor((row+1)*canvas.height/2)-y;
+    const crop=ctx.getImageData(x,y,w,h),d=crop.data;
+    const seen=new Uint8Array(w*h),stack=[];
+    for(let xx=0;xx<w;xx++){stack.push(xx,(h-1)*w+xx)}
+    for(let yy=0;yy<h;yy++){stack.push(yy*w,yy*w+w-1)}
+    while(stack.length){
+      const p=stack.pop();
+      if(p<0||p>=w*h||seen[p])continue;
+      seen[p]=1;
+      const px=p%w,py=(p/w)|0,i=p*4;
+      const bg=bgRows[y+py],dr=d[i]-bg[0],dg=d[i+1]-bg[1],db=d[i+2]-bg[2];
+      if(d[i+3]>16&&dr*dr+dg*dg+db*db>46*46)continue;
+      d[i+3]=0;
+      if(px>0)stack.push(p-1);
+      if(px<w-1)stack.push(p+1);
+      if(py>0)stack.push(p-w);
+      if(py<h-1)stack.push(p+w);
+    }
+    let left=w,top=h,right=-1,bottom=-1;
+    for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){
+      if(d[(yy*w+xx)*4+3]<32)continue;
+      left=Math.min(left,xx);right=Math.max(right,xx);
+      top=Math.min(top,yy);bottom=Math.max(bottom,yy);
+    }
+    const processed=document.createElement('canvas');
+    processed.width=w;processed.height=h;
+    processed.getContext('2d').putImageData(crop,0,0);
+    const out=document.createElement('canvas');
+    if(right<left||bottom<top){out.width=1;out.height=1}
+    else{
+      left=Math.max(0,left-3);top=Math.max(0,top-3);
+      right=Math.min(w-1,right+3);bottom=Math.min(h-1,bottom+3);
+      out.width=right-left+1;out.height=bottom-top+1;
+      out.getContext('2d').drawImage(processed,left,top,out.width,out.height,0,0,out.width,out.height);
+    }
+    crops.push(out);
+  }
+  const FW=230,FH=280;
+  const sequence=[0,1,2,3,2,3,4,5,6,6,7,0,7];
+  const sheet=document.createElement('canvas');
+  sheet.width=FW*sequence.length;sheet.height=FH;
+  const output=sheet.getContext('2d');output.imageSmoothingEnabled=false;
+  sequence.forEach((pose,index)=>{
+    const img=crops[pose],scale=Math.min((FW-8)/img.width,(FH-8)/img.height);
+    const width=Math.round(img.width*scale),height=Math.round(img.height*scale);
+    output.drawImage(img,index*FW+(FW-width)/2,FH-height-4,width,height);
+  });
+  if(scene.textures.exists('mowak-villain'))scene.textures.remove('mowak-villain');
+  scene.textures.addSpriteSheet('mowak-villain',sheet,{frameWidth:FW,frameHeight:FH});
+}
+
 function stageCreateSprite(s,key,x,y,scale){
  const goth=['punk','thug','heavy'].includes(key);
  const newPunk=key==='street-punk';
- const fox=key==='fox-warrior',welson=key==='welson';
+ const fox=key==='fox-warrior',welson=key==='welson',mowak=key==='mowak';
  const hero=HEROES.some(h=>h.id===key);
- const texture=welson&&s.textures.exists('welson-villain')?'welson-villain':fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
+ const texture=mowak&&s.textures.exists('mowak-villain')?'mowak-villain':welson&&s.textures.exists('welson-villain')?'welson-villain':fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
   ?'street-punk-villain':(goth||newPunk)&&s.textures.exists('goth-villain')?'goth-villain':key;
  const sprite=s.add.sprite(x,y,texture,0).setOrigin(.5,.94).setDepth(y+4);
- sprite.setScale(welson?(HERO_HEIGHT*2/sprite.frame.height):hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
+ sprite.setScale(welson?(HERO_HEIGHT*2/sprite.frame.height):mowak?(HERO_HEIGHT*1.65/sprite.frame.height):hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
  return sprite;
 }
 function createStage(){
@@ -762,7 +839,7 @@ function createStage(){
  const p=s.player;
  p.shadow=s.add.ellipse(p.x,p.y,77,15,0x06040c,.45).setDepth(p.y-1);
  p.sprite=stageCreateSprite(s,h.id,p.x,p.y,1.07);
- s.bunnySupport=null;s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.bossActive=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
+ s.bunnySupport=null;s.enemies=[];s.particles=[];s.nextWaveAt=0;s.finishTriggered=false;s.bossActive=false;s.mowakActive=false;s.waveSpawned=0;s.slowUntil=0;s.pendingEffects=[];
  s.cameras.main.startFollow(p.sprite,true,.095,.15,0,50);
  s.cameras.main.setDeadzone(300,160);
  s.cameras.main.setZoom(1);
@@ -777,7 +854,8 @@ const WELSON_LINES=[
  'Soy un 10, pero la tengo chica. ¡Nunca me vencerán, manguacos!',
  '¿Así que sobrevivieron a Whip Me? ¡En Algarrobo les voy a sacar la cresta!',
   '¿Creyeron que Algarrobo era el final? ¡Los espero en las calles de Santiago!',
-  'La Furia Loca no los salvará. ¡Ahora tendrán que pelear conmigo!'
+  '¿Creyeron que podían llegar hasta mí? Primero crucen Tu poto y enfrenten a MOWAK.',
+  'Ya derrotaron a MOWAK. Ahora sí, manguacos: ¡vengan a pelear conmigo!'
 ];
 function showWelsonInterlude(s,completedLevel,onContinue){
  state='interlude';interludeContinue=onContinue;clearTouchInput();
@@ -795,10 +873,20 @@ function continueWelson(){
  $('#touch-controls').classList.remove('hidden');
  clearTouchInput();state='playing';next();
 }
+function spawnMowakBoss(s){
+ s.mowakActive=true;s.enemies=[];
+ const spawnX=clamp(s.player.x+285,180,WORLD-180);
+ spawnFoe(s,spawnX,clamp(s.player.y,MIN_Y,MAX_Y),FOES.findIndex(f=>f.id==='mowak'));
+ $('#boss-hud').classList.remove('hidden');
+ $('#boss-name').textContent='★ MOWAK — JEFE DE TU POTO ★';
+ $('#wave-text').textContent='JEFE DE LA ETAPA · MOWAK';
+ toast('¡MOWAK TE ESPERA EN TU POTO!',2500);
+ s.cameras.main.flash(200,215,20,70);audio('power');
+}
 function spawnWelsonBoss(s){
  s.bossActive=true;s.enemies=[];
  const spawnX=clamp(s.player.x+300,180,WORLD-180);
- spawnFoe(s,spawnX,clamp(s.player.y+5,MIN_Y,MAX_Y),FOES.length-1);
+ spawnFoe(s,spawnX,clamp(s.player.y+5,MIN_Y,MAX_Y),FOES.findIndex(f=>f.id==='welson'));
  $('#boss-hud').classList.remove('hidden');
  $('#wave-text').textContent='JEFE FINAL · WELSON';
  toast('¡WELSON, EL JEFE FINAL!',2600);
@@ -808,7 +896,7 @@ function spawnWelsonBoss(s){
 function spawnFoe(s,x,y,tier){
  const cfg=FOES[tier];const spr=stageCreateSprite(s,cfg.id,x,y,cfg.size);
  const sh=s.add.ellipse(x,y,69,12,0x06040c,.4).setDepth(y-2);
- const hp=cfg.hp+(cfg.id==='welson'?0:(wave-1)*14);
+ const hp=cfg.hp+(['welson','mowak'].includes(cfg.id)?0:(wave-1)*14);
  const foe={id:cfg.id,tier,x,y,homeY:y,sprite:spr,shadow:sh,face:-1,hp,maxHp:hp,alive:true,speed:cfg.speed+wave*3,damage:cfg.damage*1.3,
   ready:0,windup:0,windupDone:false,stun:0,inv:0,anim:0,hitGlow:0,knockX:0};
  s.enemies.push(foe);
@@ -1019,6 +1107,34 @@ function enterThirdLevel(s){
  toast('ETAPA 3 — ALGARROBO',2400);
 }
 
+// ETAPA 5 — túnel orgánico. El panorama permanece centrado como una cueva profunda.
+function enterFifthLevel(s){
+ clearBunnySupport(s);
+ (s.stageBackdrop||[]).forEach(obj=>obj.destroy());
+ s.stageBackdrop=[];
+ s.stageBackdrop.push(s.add.rectangle(0,0,WORLD,H,0x360811).setOrigin(0,0).setDepth(-250));
+ if(s.textures.exists('tu-poto-background')){
+  const img=s.textures.get('tu-poto-background').getSourceImage();
+  const width=img.width*H/img.height;
+  const backdrop=s.add.image(W/2,H/2,'tu-poto-background')
+    .setOrigin(.5,.5).setDisplaySize(Math.max(W,width),H)
+    .setScrollFactor(0).setDepth(-240);
+  s.stageBackdrop.push(backdrop);
+ }
+ const p=s.player;
+ p.x=225;p.y=510;p.face=1;p.invUntil=0;
+ p.sprite.setVisible(true).setPosition(p.x,p.y).setAlpha(1);
+ p.shadow.setVisible(true).setPosition(p.x,p.y+5);
+ s.cameras.main.startFollow(p.sprite,true,.095,.15,0,50);
+ s.enemies=[];s.mowakActive=false;
+ p.hp=clamp(p.hp+40,0,p.maxHp);
+ p.energy=clamp(p.energy+35,0,100);
+ $('#stage-index').textContent='05';
+ $('#stage-name').textContent='TU POTO — TÚNEL DE CARNE';
+ toast('ETAPA 5 — TU POTO',2500);
+ s.cameras.main.flash(240,170,25,45);
+}
+
 // ETAPA 4 — combate sobre ruedas. Conducimos la Furia Loca mientras el
 // panorama nocturno se desplaza y los autos góticos aceleran desde atrás, hacia la derecha.
 const TRAFFIC_LANES=[490,526,558];
@@ -1152,7 +1268,7 @@ function updateDriving(time,delta){
  if(d.nextWaveAt&&time>=d.nextWaveAt){
   d.nextWaveAt=0;
   if(wave%WAVES_PER_LEVEL===0){
-   showWelsonInterlude(s,4,()=>{endDrivingLevel(s);spawnWelsonBoss(s)});
+   showWelsonInterlude(s,4,()=>{endDrivingLevel(s);addWave.call(s)});
   }else addWave.call(s);
  }
  updateHud(p,d.cars);
@@ -1174,14 +1290,16 @@ function endDrivingLevel(s){
 
 function addWave(){
  const s=this;wave++;s.waveSpawned=wave;
- if(wave>(LEVEL_COUNT-1)*WAVES_PER_LEVEL){
+ if(wave>WAVES_PER_LEVEL*3&&wave<=WAVES_PER_LEVEL*4){
   if(!s.driving)enterDrivingLevel(s);
   startTrafficWave(s);
   return;
  }
+ if(wave>LEVEL_COUNT*WAVES_PER_LEVEL)return;
  if(wave===WAVES_PER_LEVEL+1)enterSecondLevel(s);
  if(wave===WAVES_PER_LEVEL*2+1)enterThirdLevel(s);
- const total=Math.min(3+wave*2,wave>WAVES_PER_LEVEL*2?14:11);let available=WORLD-220-s.player.x;
+ if(wave===WAVES_PER_LEVEL*4+1)enterFifthLevel(s);
+ const total=Math.min(3+wave*2,wave>WAVES_PER_LEVEL*4?12:wave>WAVES_PER_LEVEL*2?14:11);let available=WORLD-220-s.player.x;
  const start=clamp(s.player.x+370,200,WORLD-240);
  for(let i=0;i<total;i++){
   const tier=wave>WAVES_PER_LEVEL&&i%5===0?4:i%4===1?3:i%5===0?2:i%3===0?1:0;
@@ -1192,7 +1310,7 @@ function addWave(){
  }
  const level=Math.ceil(wave/WAVES_PER_LEVEL),localWave=((wave-1)%WAVES_PER_LEVEL)+1;
  $('#stage-index').textContent=String(level).padStart(2,'0');
- $('#stage-name').textContent=['BLONDIE — NOCHE UNDERGROUND','WHIP ME — DISCOTECA','ALGARROBO — JUEGOS','SANTIAGO — FURIA LOCA'][level-1]||'MANGUACO FIGHTERS';
+ $('#stage-name').textContent=['BLONDIE — NOCHE UNDERGROUND','WHIP ME — DISCOTECA','ALGARROBO — JUEGOS','SANTIAGO — FURIA LOCA','TU POTO — CUEVA ORGÁNICA'][level-1]||'MANGUACO FIGHTERS';
  $('#wave-text').textContent=`ETAPA ${level} · OLEADA ${localWave} / ${WAVES_PER_LEVEL}`;
  if(localWave!==1||level===1)toast(wave===1?'¡A PELEAR!':`OLEADA ${localWave} — ¡VAMOS!`,1300);
 }
@@ -1201,8 +1319,8 @@ function updateHud(p,enemies){
  $('#energy-fill').style.width=clamp(p.energy,0,100)+'%';
  $('#score').textContent=String(score).padStart(6,'0');
  $('#enemy-counter').textContent=String(enemies.filter(e=>e.alive).length).padStart(2,'0');
- const welson=enemies.find(e=>e.id==='welson'&&e.alive);
- if(welson){$('#boss-hud').classList.remove('hidden');$('#boss-health-fill').style.width=clamp(welson.hp/welson.maxHp*100,0,100)+'%'}
+ const boss=enemies.find(e=>(e.id==='welson'||e.id==='mowak')&&e.alive);
+ if(boss){$('#boss-hud').classList.remove('hidden');$('#boss-name').textContent=boss.id==='mowak'?'★ MOWAK — JEFE DE TU POTO ★':'★ WELSON — JEFE FINAL ★';$('#boss-health-fill').style.width=clamp(boss.hp/boss.maxHp*100,0,100)+'%'}
  else $('#boss-hud').classList.add('hidden');
  if(p.hp/p.maxHp<.25)$('#health-fill').classList.add('critical');else $('#health-fill').classList.remove('critical');
 }
@@ -1374,31 +1492,33 @@ function gameLoop(time,delta){
    }else if(time>=e.ready){e.windup=time+370;e.anim=0;}
   }
   let ef=time<e.stun?FRAME.hurt:e.windup?FRAME.jab:Math.floor(e.anim/125)%4+2;
-  e.sprite.setFrame(ef).setPosition(e.x,e.y).setFlipX(e.face<0).setDepth(Math.floor(e.y)+1);
+  e.sprite.setFrame(ef).setPosition(e.x,e.y).setFlipX(e.id==='mowak'?e.face>0:e.face<0).setDepth(Math.floor(e.y)+1);
   e.shadow.setPosition(e.x,e.y+3).setDepth(Math.floor(e.y)-1);
   if(time<e.stun)e.sprite.setTint(0xffb6c6);else if(e.windup)e.sprite.setTint(0xffc1a0);else e.sprite.clearTint();
   // individual compact enemy health bars only after first hit
   if(e.hp<e.maxHp){
    if(!e.life){e.life=s.add.graphics().setDepth(1120)}
-   const lifeY=e.y-(e.id==='welson'?365:185),lifeW=e.id==='welson'?170:60;
+   const lifeY=e.y-(['welson','mowak'].includes(e.id)?365:185),lifeW=['welson','mowak'].includes(e.id)?170:60;
    e.life.clear();e.life.fillStyle(0x090816,.92).fillRect(e.x-lifeW/2,lifeY,lifeW,8);
    e.life.fillStyle(0xec548a,1).fillRect(e.x-lifeW/2+2,lifeY+2,(lifeW-4)*clamp(e.hp/e.maxHp,0,1),4);
   }
  }
  if(s.enemies.every(e=>!e.alive)&&!s.nextWaveAt&&!s.finishTriggered){
   s.nextWaveAt=time+2300;p.hp=clamp(p.hp+24,0,p.maxHp);p.energy=clamp(p.energy+18,0,100);
-  toast(s.bossActive?'¡WELSON DERROTADO!':'¡CALLE DESPEJADA! + VIDA',1300);
+  toast(s.bossActive?'¡WELSON DERROTADO!':s.mowakActive?'¡MOWAK DERROTADO!':'¡CALLE DESPEJADA! + VIDA',1300);
  }
  if(s.nextWaveAt&&time>s.nextWaveAt){
   s.nextWaveAt=0;
   if(s.bossActive){s.finishTriggered=true;end(true)}
+  else if(s.mowakActive){
+   s.mowakActive=false;
+   showWelsonInterlude(s,5,()=>spawnWelsonBoss(s));
+  }
   else if(wave%WAVES_PER_LEVEL===0){
    const completedLevel=Math.ceil(wave/WAVES_PER_LEVEL);
-   showWelsonInterlude(s,completedLevel,()=>{
-     addWave.call(s);
-   });
-  }else addWave.call(s);
- }
+   if(completedLevel===LEVEL_COUNT)spawnMowakBoss(s);
+   else showWelsonInterlude(s,completedLevel,()=>addWave.call(s));
+  }else addWave.call(s); }
  if(time>p.comboExpire)$('#combo').classList.add('hidden');
  updateHud(p,s.enemies);
 }
