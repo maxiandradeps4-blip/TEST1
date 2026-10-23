@@ -750,16 +750,20 @@ function buildMowakSheets(scene){
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(source,0,0);
   const full=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  // El fondo varía de rojo-violeta a marrón según la altura.
-  // Estimarlo en las separaciones de los cuatro cuadros protege la pintura facial blanca.
+  // The imported eight-pose atlas has a nontransparent purple gradient.
+  // Sample the empty gutters in each row so that the background's shift
+  // from violet at the top to brown at the bottom is taken into account.
   const bgRows=[];
-  const columns=[0,Math.floor(canvas.width/4),Math.floor(canvas.width/2),
-    Math.floor(canvas.width*3/4),canvas.width-1];
+  const sampleColumns=[0,3,381,384,387,765,768,771,1149,1152,1155,1532,1535];
   for(let y=0;y<canvas.height;y++){
-    const samples=columns.map(x=>{
-      const i=(y*canvas.width+x)*4;return [full[i],full[i+1],full[i+2]];
+    const samples=sampleColumns.map(x=>{
+      const i=(y*canvas.width+x)*4;
+      return [full[i],full[i+1],full[i+2]];
     });
-    bgRows.push([0,1,2].map(k=>samples.map(s=>s[k]).sort((a,b)=>a-b)[2]));
+    bgRows.push([0,1,2].map(k=>{
+      const values=samples.map(s=>s[k]).sort((a,b)=>a-b);
+      return values[(values.length/2)|0];
+    }));
   }
   const crops=[];
   for(let index=0;index<8;index++){
@@ -768,27 +772,75 @@ function buildMowakSheets(scene){
     const w=Math.floor((col+1)*canvas.width/4)-x;
     const h=Math.floor((row+1)*canvas.height/2)-y;
     const crop=ctx.getImageData(x,y,w,h),d=crop.data;
-    const seen=new Uint8Array(w*h),stack=[];
-    for(let xx=0;xx<w;xx++){stack.push(xx,(h-1)*w+xx)}
-    for(let yy=0;yy<h;yy++){stack.push(yy*w,yy*w+w-1)}
-    while(stack.length){
-      const p=stack.pop();
-      if(p<0||p>=w*h||seen[p])continue;
-      seen[p]=1;
-      const px=p%w,py=(p/w)|0,i=p*4;
-      const bg=bgRows[y+py],dr=d[i]-bg[0],dg=d[i+1]-bg[1],db=d[i+2]-bg[2];
-      if(d[i+3]>16&&dr*dr+dg*dg+db*db>46*46)continue;
-      d[i+3]=0;
-      if(px>0)stack.push(p-1);
-      if(px<w-1)stack.push(p+1);
-      if(py>0)stack.push(p-w);
-      if(py<h-1)stack.push(p+w);
+    const transparent=new Uint8Array(w*h);
+    const visited=new Uint8Array(w*h);
+    const queue=[];
+    // Seed only actual background at the border, never a bell, foot or lock of hair.
+    const bgDistanceSq=(p)=>{
+      const py=(p/w)|0,i=p*4,bg=bgRows[y+py];
+      const r=d[i]-bg[0],g=d[i+1]-bg[1],b=d[i+2]-bg[2];
+      return r*r+g*g+b*b;
+    };
+    for(let xx=0;xx<w;xx++){
+      const a=xx,b=(h-1)*w+xx;
+      if(bgDistanceSq(a)<47*47)queue.push(a);
+      if(bgDistanceSq(b)<47*47)queue.push(b);
     }
+    for(let yy=0;yy<h;yy++){
+      const a=yy*w,b=yy*w+w-1;
+      if(bgDistanceSq(a)<47*47)queue.push(a);
+      if(bgDistanceSq(b)<47*47)queue.push(b);
+    }
+    while(queue.length){
+      const p=queue.pop();
+      if(visited[p])continue;
+      visited[p]=1;
+      const px=p%w,py=(p/w)|0,i=p*4;
+      const neighbours=[
+        px>0?p-1:-1,px<w-1?p+1:-1,
+        py>0?p-w:-1,py<h-1?p+w:-1
+      ];
+      const far=bgDistanceSq(p);
+      let nearBg=far<47*47;
+      if(!nearBg&&far<92*92){
+        // Follow only the extremely smooth gradient. Crossing a crisp
+        // illustrated silhouette produces a large local color jump.
+        for(const n of neighbours){
+          if(n<0||!transparent[n])continue;
+          const j=n*4,dr=d[i]-d[j],dg=d[i+1]-d[j+1],db=d[i+2]-d[j+2];
+          if(dr*dr+dg*dg+db*db<11*11){nearBg=true;break}
+        }
+      }
+      if(!nearBg)continue;
+      transparent[p]=1;
+      for(const n of neighbours)if(n>=0&&!visited[n])queue.push(n);
+    }
+    // Feather exactly the outside edge and remove purple contamination in
+    // semitransparent pixels; the character's black outline stays opaque.
+    for(let py=0;py<h;py++)for(let px=0;px<w;px++){
+      const p=py*w+px,i=p*4;
+      if(transparent[p]){d[i+3]=0;continue}
+      const near=
+        (px>0&&transparent[p-1])||(px<w-1&&transparent[p+1])||
+        (py>0&&transparent[p-w])||(py<h-1&&transparent[p+w]);
+      if(!near)continue;
+      const bg=bgRows[y+py],dr=d[i]-bg[0],dg=d[i+1]-bg[1],db=d[i+2]-bg[2];
+      const distance=Math.sqrt(dr*dr+dg*dg+db*db);
+      const alpha=Math.max(0,Math.min(1,(distance-18)/31));
+      if(alpha<=0){d[i+3]=0;continue}
+      if(alpha<1){
+        d[i]=Math.max(0,Math.min(255,Math.round((d[i]-(1-alpha)*bg[0])/alpha)));
+        d[i+1]=Math.max(0,Math.min(255,Math.round((d[i+1]-(1-alpha)*bg[1])/alpha)));
+        d[i+2]=Math.max(0,Math.min(255,Math.round((d[i+2]-(1-alpha)*bg[2])/alpha)));
+        d[i+3]=Math.round(alpha*255);
+      }
+    }
+    // Tight crop: the eight frames align at the feet without purple boxes.
     let left=w,top=h,right=-1,bottom=-1;
-    for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){
-      if(d[(yy*w+xx)*4+3]<32)continue;
-      left=Math.min(left,xx);right=Math.max(right,xx);
-      top=Math.min(top,yy);bottom=Math.max(bottom,yy);
+    for(let py=0;py<h;py++)for(let px=0;px<w;px++){
+      if(d[(py*w+px)*4+3]<55)continue;
+      left=Math.min(left,px);right=Math.max(right,px);
+      top=Math.min(top,py);bottom=Math.max(bottom,py);
     }
     const processed=document.createElement('canvas');
     processed.width=w;processed.height=h;
@@ -796,27 +848,28 @@ function buildMowakSheets(scene){
     const out=document.createElement('canvas');
     if(right<left||bottom<top){out.width=1;out.height=1}
     else{
-      left=Math.max(0,left-3);top=Math.max(0,top-3);
-      right=Math.min(w-1,right+3);bottom=Math.min(h-1,bottom+3);
+      left=Math.max(0,left-2);top=Math.max(0,top-2);
+      right=Math.min(w-1,right+2);bottom=Math.min(h-1,bottom+2);
       out.width=right-left+1;out.height=bottom-top+1;
       out.getContext('2d').drawImage(processed,left,top,out.width,out.height,0,0,out.width,out.height);
     }
     crops.push(out);
   }
-  const FW=230,FH=280;
+  const FW=246,FH=300;
   const sequence=[0,1,2,3,2,3,4,5,6,6,7,0,7];
   const sheet=document.createElement('canvas');
   sheet.width=FW*sequence.length;sheet.height=FH;
-  const output=sheet.getContext('2d');output.imageSmoothingEnabled=false;
+  const output=sheet.getContext('2d');
+  output.imageSmoothingEnabled=true;
+  output.imageSmoothingQuality='high';
   sequence.forEach((pose,index)=>{
-    const img=crops[pose],scale=Math.min((FW-8)/img.width,(FH-8)/img.height);
+    const img=crops[pose],scale=Math.min((FW-10)/img.width,(FH-10)/img.height);
     const width=Math.round(img.width*scale),height=Math.round(img.height*scale);
     output.drawImage(img,index*FW+(FW-width)/2,FH-height-4,width,height);
   });
   if(scene.textures.exists('mowak-villain'))scene.textures.remove('mowak-villain');
   scene.textures.addSpriteSheet('mowak-villain',sheet,{frameWidth:FW,frameHeight:FH});
 }
-
 function stageCreateSprite(s,key,x,y,scale){
  const goth=['punk','thug','heavy'].includes(key);
  const newPunk=key==='street-punk';
@@ -825,7 +878,7 @@ function stageCreateSprite(s,key,x,y,scale){
  const texture=mowak&&s.textures.exists('mowak-villain')?'mowak-villain':welson&&s.textures.exists('welson-villain')?'welson-villain':fox&&s.textures.exists('fox-warrior-villain')?'fox-warrior-villain':newPunk&&s.textures.exists('street-punk-villain')
   ?'street-punk-villain':(goth||newPunk)&&s.textures.exists('goth-villain')?'goth-villain':key;
  const sprite=s.add.sprite(x,y,texture,0).setOrigin(.5,.94).setDepth(y+4);
- sprite.setScale(welson?(HERO_HEIGHT*2/sprite.frame.height):mowak?(HERO_HEIGHT*1.65/sprite.frame.height):hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
+ sprite.setScale(welson?(HERO_HEIGHT*2/sprite.frame.height):mowak?(HERO_HEIGHT*1.42/sprite.frame.height):hero?heroScaleFor(sprite,key):fox?scale*.92*1.30:(goth||newPunk)?scale*.92:scale*3.85);
  return sprite;
 }
 function createStage(){
