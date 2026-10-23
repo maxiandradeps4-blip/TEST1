@@ -1762,7 +1762,7 @@ gameLoop=function(time,delta){
 };
 const _sixOldSelect=select;
 select=function(index){
- if(netGameStarted)return;
+ if(netGameStarted&&!netSilentSelect)return;
  const desired=(index+6)%6;
  const ownSlot=netRole==='guest'?netMySlot:0;
  if(!netSilentSelect&&netRole!=='idle'&&netHeroTaken(desired,ownSlot)){
