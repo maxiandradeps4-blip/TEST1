@@ -13,9 +13,9 @@ Juego web multijugador de respuestas simultáneas. Funciona como sitio estático
 
 ## Conexión multijugador
 
-El juego usa PeerJS para señalizar una conexión de datos entre el anfitrión y sus invitados. No requiere claves de Firebase ni un backend propio. Cada sala se identifica con un código aleatorio de cinco caracteres; el anfitrión mantiene el estado y sincroniza las respuestas, el marcador y las rondas.
+El juego incluye el cliente PeerJS dentro de `assets/peerjs.min.js`, así no depende de un CDN externo para cargarlo. No requiere claves de Firebase ni un backend propio. Cada sala se identifica con un código aleatorio de cinco caracteres; el anfitrión mantiene el estado y sincroniza las respuestas, el marcador y las rondas.
 
-PeerJS se carga desde un CDN y utiliza su servidor de señalización público. La conexión directa puede depender de las redes y cortafuegos de cada jugador; si una red bloquea WebRTC, prueben desde otra conexión o navegador.
+PeerJS usa su servidor público de señalización. La conexión directa puede depender de las redes y cortafuegos de cada jugador; si una red bloquea WebRTC, prueben desde otra conexión o navegador. La licencia MIT del cliente está incluida en `PEERJS-LICENSE.txt`.
 
 ## Publicar con GitHub Pages
 
