@@ -11,29 +11,11 @@ Juego web multijugador de respuestas simultáneas. Funciona como sitio estático
 - Con 3 vacas rosadas quedas fuera. Gana quien llegue primero a 5 vacas comunes y tenga menos de 3 rosadas.
 - Máximo 12 jugadores por sala. La sala se mantiene mientras exista en Firebase.
 
-## Configurar Firebase (una vez)
+## Conexión multijugador
 
-1. En [Firebase Console](https://console.firebase.google.com/), crea un proyecto.
-2. En **Authentication > Sign-in method**, activa **Anonymous**.
-3. En **Realtime Database**, crea una base de datos. Copia su URL (por ejemplo `https://mi-proyecto-default-rtdb.firebaseio.com`).
-4. En la configuración del proyecto, crea una aplicación web y copia sus valores de configuración.
-5. En `index.html`, reemplaza `PEGA_API_KEY`, `PEGA_PROJECT_ID` y `PEGA_APP_ID` por los valores reales. En `databaseURL`, pega la URL exacta de tu Realtime Database.
-6. En **Realtime Database > Rules**, configura estas reglas para una primera versión jugable:
+El juego usa PeerJS para señalizar una conexión de datos entre el anfitrión y sus invitados. No requiere claves de Firebase ni un backend propio. Cada sala se identifica con un código aleatorio de cinco caracteres; el anfitrión mantiene el estado y sincroniza las respuestas, el marcador y las rondas.
 
-```json
-{
-  "rules": {
-    "rooms": {
-      "$room": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
-    }
-  }
-}
-```
-
-Las reglas permiten a cualquier usuario autenticado anónimamente leer y modificar datos de cualquier sala. Son simples para una partida entre amigos, pero no validan las acciones desde el servidor; no uses esto para manejar datos sensibles ni para partidas competitivas.
+PeerJS se carga desde un CDN y utiliza su servidor de señalización público. La conexión directa puede depender de las redes y cortafuegos de cada jugador; si una red bloquea WebRTC, prueben desde otra conexión o navegador.
 
 ## Publicar con GitHub Pages
 
@@ -42,7 +24,7 @@ Las reglas permiten a cualquier usuario autenticado anónimamente leer y modific
 3. En **Build and deployment**, selecciona **Deploy from a branch**, elige `main` y `/ (root)`, y guarda.
 4. GitHub te dará una dirección pública. Comparte esa dirección y el código de sala con tus amigos.
 
-Para probar en local, sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`) y abre `http://localhost:8000`. Firebase Authentication no funciona de forma fiable abriendo el HTML con doble clic (`file://`).
+Para probar en local, sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`) y abre `http://localhost:8000`.
 
 ## Personalizar preguntas
 
